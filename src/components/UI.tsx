@@ -76,7 +76,7 @@ export function statusTone(
   if (["Live", "Active", "Paid", "Connected"].includes(status)) return "green";
   if (["Maintenance", "Expiring soon", "Open", "Lead"].includes(status))
     return "orange";
-  if (["Overdue", "Action needed"].includes(status)) return "red";
+  if (["Overdue", "Action needed", "Expired"].includes(status)) return "red";
   if (status === "Draft" || status === "Pending") return "blue";
   return "neutral";
 }

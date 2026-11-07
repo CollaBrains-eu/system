@@ -26,6 +26,7 @@ class Oxxa_Studio_REST
         register_rest_route(self::NS, '/status', array_merge($read, array('callback' => array($this, 'status'))));
         register_rest_route(self::NS, '/settings', array_merge($write, array('callback' => array($this, 'save_settings'))));
         register_rest_route(self::NS, '/connection/test', array_merge($write, array('callback' => array($this, 'test_connection'))));
+        register_rest_route(self::NS, '/domains/sync', array_merge($write, array('callback' => array($this, 'domain_sync'))));
         register_rest_route(self::NS, '/domain/check', array_merge($write, array('callback' => array($this, 'domain_check'))));
         register_rest_route(self::NS, '/domain/register', array_merge($write, array('callback' => array($this, 'domain_register'))));
         register_rest_route(self::NS, '/domain/autorenew', array_merge($write, array('callback' => array($this, 'domain_autorenew'))));
@@ -66,24 +67,13 @@ class Oxxa_Studio_REST
             $sites[] = $this->format_site($site);
         }
 
-        $domains = $this->stored_domains();
-        $sync_error = null;
-        $api = new Oxxa_Studio_Oxxa_API();
-        if (Oxxa_Studio_Oxxa_API::has_credentials()) {
-            $response = $api->request('domain_list', array('records' => 200, 'sortname' => 'sld', 'sortorder' => 'ASC'));
-            if (is_wp_error($response)) {
-                $sync_error = $response->get_error_message();
-            } else {
-                $domains = $this->format_domains($response, $domains);
-            }
-        }
-
         return rest_ensure_response(array(
             'sites' => $sites,
-            'domains' => $domains,
+            // Domain synchronization is explicit so an Oxxa timeout never blocks dashboard loading.
+            'domains' => array_values($this->stored_domains()),
             'clients' => array_values(get_network_option(null, 'oxxa_studio_clients', array())),
             'invoices' => array_values(get_network_option(null, 'oxxa_studio_invoices', array())),
-            'domainSyncError' => $sync_error,
+            'domainLastSync' => get_network_option(null, 'oxxa_studio_domain_last_sync', ''),
             'serverTime' => current_time('c'),
         ));
     }
@@ -192,6 +182,45 @@ class Oxxa_Studio_REST
         return rest_ensure_response(array('id' => $id, 'status' => $status));
     }
 
+    /**
+     * Read the complete Oxxa portfolio and upsert it into network storage.
+     * This endpoint is read-only at Oxxa: it never registers or renews a domain.
+     */
+    public function domain_sync()
+    {
+        $api = new Oxxa_Studio_Oxxa_API();
+        $response = $api->request('domain_list', array('records' => -1, 'sortname' => 'sld', 'sortorder' => 'ASC'));
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $local = $this->stored_domains();
+        $remote = $this->format_domains($response, $local);
+        $merged = $local;
+        $imported = 0;
+        $updated = 0;
+        foreach ($remote as $domain) {
+            if (isset($local[$domain['name']])) {
+                $updated++;
+            } else {
+                $imported++;
+            }
+            $merged[$domain['name']] = $domain;
+        }
+        update_network_option(null, 'oxxa_studio_domains', $merged);
+        $synced_at = current_time('c');
+        update_network_option(null, 'oxxa_studio_domain_last_sync', $synced_at);
+
+        return rest_ensure_response(array(
+            'domains' => array_values($merged),
+            'imported' => $imported,
+            'updated' => $updated,
+            'total' => count($remote),
+            'syncedAt' => $synced_at,
+            'testMode' => $api->is_test_mode(),
+        ));
+    }
+
     public function domain_check(WP_REST_Request $request)
     {
         $api = new Oxxa_Studio_Oxxa_API();
@@ -252,22 +281,33 @@ class Oxxa_Studio_REST
     {
         $result = array();
         if (!isset($xml->details->domain)) {
-            return array_values($local);
+            return array();
         }
         foreach ($xml->details->domain as $record) {
-            $name = strtolower((string) $record->domainname);
+            $name = strtolower(trim((string) $record->domainname));
+            if (is_wp_error(Oxxa_Studio_Oxxa_API::split_domain($name))) {
+                continue;
+            }
             $expiry = strtotime((string) $record->expire_date);
-            $expiring = $expiry && $expiry < strtotime('+30 days') && $expiry >= current_time('timestamp');
+            $now = time();
+            $expired = $expiry && $expiry < $now;
+            $expiring = $expiry && !$expired && $expiry < strtotime('+30 days');
+            $status = $expired ? 'Expired' : ($expiring ? 'Expiring soon' : 'Active');
             $existing = isset($local[$name]) ? $local[$name] : array();
+            $last_renewed = strtotime((string) $record->last_renew_date);
             $result[$name] = array_merge($existing, array(
                 'id' => isset($existing['id']) ? $existing['id'] : hexdec(substr(md5($name), 0, 7)),
                 'name' => $name,
                 'client' => isset($existing['client']) ? $existing['client'] : 'Oxxa portfolio',
-                'expiry' => $expiry ? gmdate('d M Y', $expiry) : (string) $record->expire_date,
+                'expiry' => $expiry ? wp_date('d M Y', $expiry) : (string) $record->expire_date,
                 'autoRenew' => strtoupper((string) $record->autorenew) === 'Y',
-                'status' => $expiring ? 'Expiring soon' : 'Active',
+                'status' => $status,
                 'site' => isset($existing['site']) ? $existing['site'] : 'Not mapped',
-                'dns' => isset($existing['dns']) ? $existing['dns'] : 'Connected',
+                // domain_list does not inspect a DNS zone, so never claim connectivity here.
+                'dns' => isset($existing['dns']) ? $existing['dns'] : 'Not verified',
+                'nsgroup' => sanitize_text_field((string) $record->nsgroup),
+                'registrant' => sanitize_text_field((string) $record->{'identity-registrant'}),
+                'lastRenewed' => $last_renewed ? wp_date('d M Y', $last_renewed) : '',
             ));
         }
         return array_values($result);

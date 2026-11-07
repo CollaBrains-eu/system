@@ -58,7 +58,12 @@ import type {
   StudioTemplate,
   ToastMessage,
 } from "./types";
-import { wpBoot, wpRequest, type DomainAvailability } from "./lib/wp";
+import {
+  wpBoot,
+  wpRequest,
+  type DomainAvailability,
+  type DomainSyncResult,
+} from "./lib/wp";
 import {
   Avatar,
   Badge,
@@ -150,6 +155,9 @@ export default function App() {
   );
   const [sites, setSites] = useState(initialSites);
   const [domains, setDomains] = useState(initialDomains);
+  const [domainSyncing, setDomainSyncing] = useState(false);
+  const [domainLastSync, setDomainLastSync] = useState("");
+  const [domainSyncError, setDomainSyncError] = useState("");
   const [clients, setClients] = useState(initialClients);
   const [invoices, setInvoices] = useState(initialInvoices);
   const [modal, setModal] = useState<ModalType>(null);
@@ -224,7 +232,7 @@ export default function App() {
       domains: Domain[];
       clients: Client[];
       invoices: Invoice[];
-      domainSyncError?: string;
+      domainLastSync?: string;
     }>("network")
       .then((data) => {
         if (!active) return;
@@ -232,8 +240,7 @@ export default function App() {
         setDomains(data.domains || []);
         setClients(data.clients || []);
         setInvoices(data.invoices || []);
-        if (data.domainSyncError)
-          notify("Oxxa sync needs attention", data.domainSyncError);
+        setDomainLastSync(data.domainLastSync || "");
       })
       .catch((error) =>
         notify(
@@ -338,6 +345,51 @@ export default function App() {
       `${created.id} has been saved for ${created.client}.`,
     );
   }
+  async function syncDomains() {
+    if (domainSyncing) return;
+    setDomainSyncing(true);
+    setDomainSyncError("");
+    try {
+      let result: DomainSyncResult;
+      if (wpBoot?.demo) {
+        throw new Error(
+          "Connect your Oxxa API credentials in the Setup guide before synchronizing a live portfolio.",
+        );
+      } else if (wpBoot) {
+        result = await wpRequest<DomainSyncResult>("domains/sync", {
+          method: "POST",
+        });
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 950));
+        result = {
+          domains,
+          imported: 0,
+          updated: domains.length,
+          total: domains.length,
+          syncedAt: new Date().toISOString(),
+          testMode: true,
+        };
+      }
+      setDomains(result.domains);
+      setDomainLastSync(result.syncedAt);
+      notify(
+        wpBoot ? "Oxxa portfolio synchronized" : "Demo portfolio refreshed",
+        wpBoot
+          ? `${result.total} domains checked · ${result.imported} imported · ${result.updated} refreshed. No orders were placed.`
+          : `${result.total} sample domains were refreshed locally. No Oxxa API request was made.`,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The Oxxa portfolio could not be synchronized.";
+      setDomainSyncError(message);
+      notify("Domain sync needs attention", message);
+    } finally {
+      setDomainSyncing(false);
+    }
+  }
+
   function toggleDomain(id: number) {
     setDomains((current) =>
       current.map((domain) =>
@@ -880,6 +932,10 @@ export default function App() {
               onDomainSearch={() => setModal("domain")}
               onToggle={toggleDomain}
               onSelect={setSelectedDomain}
+              onSync={syncDomains}
+              syncing={domainSyncing}
+              lastSync={domainLastSync}
+              syncError={domainSyncError}
               notify={notify}
             />
           )}
@@ -1103,7 +1159,9 @@ export default function App() {
             <p>
               {selectedDomain.dns === "Connected"
                 ? "DNS is connected and resolving correctly."
-                : "DNS needs your attention before the site can go live."}
+                : selectedDomain.dns === "Action needed"
+                  ? "DNS needs your attention before the site can go live."
+                  : "DNS connectivity has not been verified by portfolio sync."}
             </p>
           </div>
           <section className="drawer-section">
@@ -1125,6 +1183,24 @@ export default function App() {
                 <dt>Mapped website</dt>
                 <dd>{selectedDomain.site}</dd>
               </div>
+              {selectedDomain.nsgroup && (
+                <div>
+                  <dt>Nameserver group</dt>
+                  <dd>{selectedDomain.nsgroup}</dd>
+                </div>
+              )}
+              {selectedDomain.registrant && (
+                <div>
+                  <dt>Registrant identity</dt>
+                  <dd>{selectedDomain.registrant}</dd>
+                </div>
+              )}
+              {selectedDomain.lastRenewed && (
+                <div>
+                  <dt>Last renewed</dt>
+                  <dd>{selectedDomain.lastRenewed}</dd>
+                </div>
+              )}
             </dl>
             <div className="settings-toggle-row">
               <div>
@@ -1147,41 +1223,69 @@ export default function App() {
                 {selectedDomain.dns}
               </Badge>
             </div>
-            <div className="dns-record">
-              <span>A</span>
-              <div>
-                <strong>@</strong>
-                <small>203.0.113.42</small>
+            {!wpBoot ? (
+              <>
+                <p className="drawer-data-note">
+                  Illustrative demo records — not read from Oxxa.
+                </p>
+                <div className="dns-record">
+                  <span>A</span>
+                  <div>
+                    <strong>@</strong>
+                    <small>203.0.113.42</small>
+                  </div>
+                  <CheckCircle2 size={15} />
+                </div>
+                <div className="dns-record">
+                  <span>CNAME</span>
+                  <div>
+                    <strong>www</strong>
+                    <small>{selectedDomain.name}</small>
+                  </div>
+                  <CheckCircle2 size={15} />
+                </div>
+                <div className="dns-record">
+                  <span>MX</span>
+                  <div>
+                    <strong>@</strong>
+                    <small>mail.example.test</small>
+                  </div>
+                  <CheckCircle2 size={15} />
+                </div>
+                <button
+                  className="button button-secondary full-width"
+                  onClick={() =>
+                    notify(
+                      "Demo DNS refreshed",
+                      "Sample records were refreshed locally. No Oxxa DNS request was made.",
+                    )
+                  }
+                >
+                  <Activity size={16} /> Refresh demo records
+                </button>
+              </>
+            ) : (
+              <div className="dns-provider-info">
+                <ShieldCheck size={22} />
+                <strong>
+                  {selectedDomain.nsgroup
+                    ? `Oxxa nameserver group ${selectedDomain.nsgroup}`
+                    : "DNS zone not inspected"}
+                </strong>
+                <p>
+                  Portfolio sync imports registration data only. It does not
+                  read zone records or verify public DNS resolution.
+                </p>
+                <a
+                  className="button button-secondary full-width"
+                  href="https://www.oxxa.com/en/domain-names/api"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Oxxa DNS API documentation <ExternalLink size={15} />
+                </a>
               </div>
-              <CheckCircle2 size={15} />
-            </div>
-            <div className="dns-record">
-              <span>CNAME</span>
-              <div>
-                <strong>www</strong>
-                <small>{selectedDomain.name}</small>
-              </div>
-              <CheckCircle2 size={15} />
-            </div>
-            <div className="dns-record">
-              <span>MX</span>
-              <div>
-                <strong>@</strong>
-                <small>mail.oxxa-hosted.net</small>
-              </div>
-              <CheckCircle2 size={15} />
-            </div>
-            <button
-              className="button button-secondary full-width"
-              onClick={() =>
-                notify(
-                  "DNS synchronized",
-                  `Oxxa DNS records for ${selectedDomain.name} were refreshed.`,
-                )
-              }
-            >
-              <Activity size={16} /> Sync DNS records
-            </button>
+            )}
           </section>
         </Drawer>
       )}

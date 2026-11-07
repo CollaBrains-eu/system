@@ -58,6 +58,12 @@ Then:
 
 Choose **Create new → Website**. Oxxa Studio creates a draft network site, assigns its client/template metadata, and activates Oxxa Studio Blocks when available. Subdirectory and subdomain Multisite installations are supported by the PHP provisioner. Custom domains are stored as mapping metadata; DNS changes and Registrar transfers remain explicit Oxxa operations.
 
+### Synchronizing domains
+
+Open **Domains → Sync Oxxa** to retrieve the complete account portfolio with the documented `domain_list records=-1` request. The operation imports expiry dates, auto-renew state, nameserver group, registrant handle, and last-renewal date; preserves local client/site mappings; and stores the results plus a last-sync timestamp in network options. Dashboard loading no longer waits for Oxxa. Sync is read-only at Oxxa and never registers or renews a domain. Standalone preview refresh is explicitly local demo behavior.
+
+Portfolio sync does not inspect DNS zones or prove public resolution. Newly imported domains therefore show **DNS not verified**, not a fabricated connected state.
+
 ### Publishing designs
 
 Open **Design studio**, choose a project, and edit the shared template. **Publish** saves the design through the WordPress REST API. Sites using that template and the companion theme receive the shared homepage heading, eyebrow, colors, font, heading size, and button radius. Use the native **WordPress Site Editor** for additional pages, posts, navigation, and unique per-site blocks.

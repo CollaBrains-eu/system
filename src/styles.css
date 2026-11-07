@@ -2199,6 +2199,34 @@ kbd {
 .oxxa-mini-status .badge {
   font-size: 7px;
 }
+.domain-sync-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  margin: -4px 0 14px;
+  border: 1px solid #ecd2c7;
+  border-radius: 9px;
+  background: #fff8f4;
+  color: #a45e42;
+}
+.domain-sync-error > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.domain-sync-error strong {
+  color: #704634;
+  font-size: 9px;
+}
+.domain-sync-error span {
+  font-size: 8px;
+}
+.domain-sync-error .text-button {
+  flex-shrink: 0;
+  color: #8d563e;
+}
 .domains-controls {
   margin-bottom: 12px;
 }
@@ -2235,6 +2263,9 @@ kbd {
 }
 .dns-status.warning {
   color: #a46c44;
+}
+.dns-status.neutral {
+  color: #858d80;
 }
 .switch {
   width: 30px;
@@ -4383,6 +4414,31 @@ kbd {
 }
 .drawer-section-heading h3 {
   margin: 0;
+}
+.drawer-data-note {
+  margin: -2px 0 12px;
+  color: #8a9185;
+  font-size: 8px;
+  line-height: 1.6;
+}
+.dns-provider-info {
+  padding: 16px;
+  border: 1px solid #e2e6dc;
+  border-radius: 10px;
+  background: #f7f9f4;
+  color: #71825e;
+}
+.dns-provider-info > strong {
+  display: block;
+  margin: 9px 0 5px;
+  color: #3b4634;
+  font-size: 10px;
+}
+.dns-provider-info > p {
+  margin: 0 0 14px;
+  color: #848c7f;
+  font-size: 8px;
+  line-height: 1.65;
 }
 .dns-record {
   display: flex;

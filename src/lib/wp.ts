@@ -73,6 +73,15 @@ export async function wpRequest<T>(
   return data as T;
 }
 
+export interface DomainSyncResult {
+  domains: import("../types").Domain[];
+  imported: number;
+  updated: number;
+  total: number;
+  syncedAt: string;
+  testMode: boolean;
+}
+
 export interface DomainAvailability {
   domain: string;
   available: boolean;

@@ -34,9 +34,12 @@ export interface Domain {
   client: string;
   expiry: string;
   autoRenew: boolean;
-  status: "Active" | "Expiring soon" | "Pending";
+  status: "Active" | "Expiring soon" | "Pending" | "Expired";
   site: string;
-  dns: "Connected" | "Action needed";
+  dns: "Connected" | "Action needed" | "Not verified";
+  nsgroup?: string;
+  registrant?: string;
+  lastRenewed?: string;
 }
 
 export interface Client {
