@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Oxxa Studio 1.6.0 — interactive WordPress Multisite installer.
+# Subdirectory networks need only one DNS record; subdomains remain optional.
 # Run as the DirectAdmin account user, not root. No secrets are logged.
 set -Eeuo pipefail
 
@@ -25,10 +26,11 @@ Required before starting:
   - An empty, writable document root.
   - An existing MySQL/MariaDB database and database user.
   - PHP 7.4+ with openssl, simplexml, curl, json and mysqli.
-  - DNS for studio.collabrains.de and, for subsites, *.studio.collabrains.de.
+  - DNS for studio.collabrains.de. Wildcard DNS is only needed for optional
+    subdomain Multisite, not for the default subdirectory network.
 
-The script installs WordPress subdomain Multisite, the Oxxa Studio plugin and
-companion theme. Run it as the DirectAdmin account user, never as root.
+The script installs WordPress Multisite, the Oxxa Studio plugin and companion
+theme. Subdirectory mode is the default; subdomain mode remains optional. Run it as the DirectAdmin account user, never as root.
 Provider credentials are intentionally configured later in Network Admin.
 
 Optional environment variables:
@@ -66,6 +68,9 @@ read -r -p "Network domain [studio.collabrains.de]: " DOMAIN
 DOMAIN="${DOMAIN:-studio.collabrains.de}"
 DOMAIN="${DOMAIN,,}"
 [[ "$DOMAIN" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$ ]] || die "Enter a hostname only, without https:// or a path."
+read -r -p "Multisite mode: subdirectories or subdomains [subdirectories]: " NETWORK_MODE
+NETWORK_MODE="${NETWORK_MODE:-subdirectories}"
+[[ "$NETWORK_MODE" == "subdirectories" || "$NETWORK_MODE" == "subdomains" ]] || die "Choose either subdirectories or subdomains."
 
 DEFAULT_PATH="$HOME/domains/$DOMAIN/public_html"
 read -r -p "Empty WordPress document root [$DEFAULT_PATH]: " WP_PATH
@@ -103,8 +108,13 @@ printf '\n'
 [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASS" ]] || die "Database name, username and password are required."
 
 PUBLIC_IP="$(curl -4fsSL --max-time 8 https://api.ipify.org 2>/dev/null || true)"
-printf '\nDomain:       %s\nDocument root: %s\nNetwork:      %s\n' "$DOMAIN" "$WP_PATH" "$NETWORK_TITLE"
+printf '\nDomain:       %s\nDocument root: %s\nNetwork:      %s\nNetwork mode: %s\n' "$DOMAIN" "$WP_PATH" "$NETWORK_TITLE" "$NETWORK_MODE"
 [[ -z "$PUBLIC_IP" ]] || printf 'Outbound IP:  %s (use this for provider IP allowlists after verification)\n' "$PUBLIC_IP"
+if [[ "$NETWORK_MODE" == "subdirectories" ]]; then
+  printf 'Site URLs:    https://%s/klant1 (no wildcard DNS needed)\n' "$DOMAIN"
+else
+  printf 'Site URLs:    https://klant1.%s (requires wildcard DNS and virtual host)\n' "$DOMAIN"
+fi
 if getent hosts "$DOMAIN" >/dev/null 2>&1; then
   printf 'DNS:          hostname resolves\n'
 else
@@ -137,13 +147,32 @@ wp_at config set DISALLOW_FILE_EDIT true --raw
 wp_at config set WP_DEBUG false --raw
 wp_at config set WP_DEBUG_DISPLAY false --raw
 
-info "Installing the subdomain Multisite network"
-wp_at core multisite-install --url="https://$DOMAIN" --title="$NETWORK_TITLE" --admin_user="$ADMIN_USER" --admin_password="$ADMIN_PASS" --admin_email="$ADMIN_EMAIL" --subdomains
+info "Installing the $NETWORK_MODE Multisite network"
+MULTISITE_FLAGS=()
+if [[ "$NETWORK_MODE" == "subdomains" ]]; then
+  MULTISITE_FLAGS+=(--subdomains)
+fi
+wp_at core multisite-install --url="https://$DOMAIN" --title="$NETWORK_TITLE" --admin_user="$ADMIN_USER" --admin_password="$ADMIN_PASS" --admin_email="$ADMIN_EMAIL" "${MULTISITE_FLAGS[@]}"
 
 # DirectAdmin normally uses Apache/LiteSpeed. Create the standard rules only
 # for this fresh installation; never overwrite an existing rewrite file.
 if [[ ! -f "$WP_PATH/.htaccess" ]]; then
-  cat > "$WP_PATH/.htaccess" <<'HTACCESS'
+  if [[ "$NETWORK_MODE" == "subdirectories" ]]; then
+    cat > "$WP_PATH/.htaccess" <<'HTACCESS'
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteRule ^wp-admin$ wp-admin/ [R=301,L]
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^(wp-(content|admin|includes).*) $1 [L]
+RewriteRule ^(.*\.php)$ $1 [L]
+RewriteRule . index.php [L]
+HTACCESS
+  else
+    cat > "$WP_PATH/.htaccess" <<'HTACCESS'
 RewriteEngine On
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteBase /
@@ -156,6 +185,7 @@ RewriteRule ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) $2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+/)?(.*\.php)$ $2 [L]
 RewriteRule . index.php [L]
 HTACCESS
+  fi
 fi
 
 info "Installing and network-activating Oxxa Studio"
@@ -179,12 +209,20 @@ else
   warn "WordPress is installed locally, but HTTPS did not respond yet. Check DNS, the virtual host and the TLS certificate."
 fi
 
+if [[ "$NETWORK_MODE" == "subdirectories" ]]; then
+  SITE_EXAMPLE="https://$DOMAIN/klant1"
+else
+  SITE_EXAMPLE="https://klant1.$DOMAIN"
+fi
 cat <<DONE
 
 Installation complete.
 
 Network Admin:
   https://$DOMAIN/wp-admin/network/
+
+New site URL pattern:
+  $SITE_EXAMPLE
 
 Next, configure real providers in Oxxa Studio:
   1. Open Oxxa Studio → Setup guide and review system health.

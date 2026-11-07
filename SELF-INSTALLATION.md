@@ -12,7 +12,7 @@ Werk als een senior WordPress Multisite-, DirectAdmin- en Oxxa-engineer. Install
 https://studio.collabrains.de
 ```
 
-Gebruik de bijgeleverde `install.sh`, `oxxa-studio.zip` en `oxxa-studio-theme.zip`. Het doel is een nieuwe WordPress **subdomain Multisite**, met Oxxa Studio network-geactiveerd en het companion theme network-enabled. De Arena/Vite-preview is altijd demo en mag niet als productie-installatie worden gebruikt.
+Gebruik de bijgeleverde `install.sh`, `oxxa-studio.zip` en `oxxa-studio-theme.zip`. Het doel is een nieuwe WordPress **subdirectory Multisite zonder wildcard-DNS**, met Oxxa Studio network-geactiveerd en het companion theme network-enabled. Klantsites krijgen URLs zoals `studio.collabrains.de/klant1`. Subdomain-Multisite mag alleen als ik dat later expliciet kies. De Arena/Vite-preview is altijd demo en mag niet als productie-installatie worden gebruikt.
 
 Vraag mij alleen om gegevens die nog ontbreken. Laat mij geheimen via een verborgen prompt of veilig lokaal invoerkanaal invoeren. Toon, log, commit of herhaal nooit database-, WordPress-, Oxxa- of DirectAdmin-geheimen.
 
@@ -45,14 +45,13 @@ Vraag mij interactief om:
 
 Controleer PHP 7.4+—bij voorkeur PHP 8.2/8.3—met `openssl`, `simplexml`, `curl`, `json` en `mysqli`. Controleer `curl`, `unzip`, schrijfrechten en HTTPS.
 
-Leg deze DNS-records aan of geef mij een exacte blokkade als ik dat zelf moet doen:
+Leg alleen dit DNS-record aan of geef mij een exacte blokkade als ik dat zelf moet doen:
 
 ```text
 studio.collabrains.de    A      <publiek-server-IPv4>
-*.studio.collabrains.de  A      <publiek-server-IPv4>
 ```
 
-Voeg alleen AAAA toe als IPv6 correct naar dezelfde WordPress-server verwijst. Het wildcard-record is voor Multisite-subsites zoals `klant1.studio.collabrains.de`. Zorg dat de virtual host deze subdomeinen afhandelt.
+Voeg alleen AAAA toe als IPv6 correct naar dezelfde WordPress-server verwijst. Maak **geen wildcardrecord** en wijzig de bestaande hoofddomein-, www-, mail-, MX-, TXT- of nameserverrecords niet. De standaard subdirectory-sites gebruiken allemaal hetzelfde `studio.collabrains.de`-adres en certificaat. Kies in het script `subdirectories`; alleen een expliciete latere keuze voor `subdomains` vereist wildcard-DNS en een wildcard-vhost.
 
 ### 2. WordPress Multisite en Oxxa Studio
 
@@ -62,7 +61,7 @@ Ga naar de uitgepakte installatiekit en voer uit:
 bash install.sh
 ```
 
-Het script installeert WordPress, configureert subdomain Multisite, installeert de plugin en het theme en voert lokale controles uit. Als WP-CLI ontbreekt mag het script de officiële WP-CLI PHAR van GitHub downloaden. Als een vereiste controle faalt, los de oorzaak op; omzeil de controle niet.
+Het script installeert WordPress, configureert standaard subdirectory Multisite zonder wildcard, installeert de plugin en het theme en voert lokale controles uit. Als WP-CLI ontbreekt mag het script de officiële WP-CLI PHAR van GitHub downloaden. Als een vereiste controle faalt, los de oorzaak op; omzeil de controle niet.
 
 Controleer daarna:
 
