@@ -268,7 +268,7 @@ export default function Hosting({
             <p>
               {demo
                 ? "Illustrative hosting plan for preview mode."
-                : `${account?.domain || snapshot?.url} · ${account?.type || "user"} level`}
+                : `${account?.domain || snapshot?.url} · ${account?.type || "user"} level${snapshot?.apiMode ? ` · ${snapshot.apiMode === "rest" ? "modern REST API" : "legacy API"}` : ""}`}
             </p>
           </div>
         </div>

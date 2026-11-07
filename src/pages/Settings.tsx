@@ -477,11 +477,12 @@ export default function Settings({
                     <strong>Use a restricted Login Key</strong>
                     <p>
                       Create a key under DirectAdmin → Advanced Features → Login
-                      Keys. Allow CMD_API_SHOW_USER_CONFIG and
-                      CMD_API_SHOW_USER_USAGE for account sync. Add CMD_API_POP
-                      only when mailbox listing and creation are needed.
-                      Restrict its IP where possible. The key is encrypted by
-                      WordPress.
+                      Keys. Account sync uses /api/session/user-config and
+                      /api/session/user-usage first. Keep
+                      CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE
+                      allowed for older-server fallback. Add CMD_API_POP only
+                      when mailbox listing and creation are needed. Restrict its
+                      IP where possible. The key is encrypted by WordPress.
                     </p>
                   </div>
                 </div>

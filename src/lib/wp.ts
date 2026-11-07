@@ -51,6 +51,7 @@ export interface DirectAdminSnapshot {
   url: string;
   username: string;
   lastSync: string;
+  apiMode?: "rest" | "legacy";
   account?: {
     package: string;
     domain: string;

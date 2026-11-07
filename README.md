@@ -78,7 +78,9 @@ Open **Network settings → DirectAdmin** and enter the HTTPS base URL (normally
 - `CMD_API_SHOW_USER_USAGE`
 - `CMD_API_POP` — only when mailbox listing and creation are required
 
-Test the connection, save, then choose **Hosting → Sync DirectAdmin**. WordPress uses HTTPS Basic Auth and `json=yes`, stores the Login Key with the same AES-256-GCM protection as the Oxxa password, and caches only non-secret account/usage data. The snapshot represents the authenticated **user-level account**, not an inferred reseller-wide total. Clearing the URL or username and saving removes the stored key and cached snapshot.
+Account sync first uses the modern read-only `/api/session/user-config` and `/api/session/user-usage` endpoints. Their nested `quotaBytes` and `bandwidthBytes` values are converted from bytes to MB. If these routes are unavailable or not permitted, account sync falls back to `CMD_API_SHOW_USER_CONFIG` and `CMD_API_SHOW_USER_USAGE`; mailbox management continues to use `CMD_API_POP`.
+
+Test the connection, save, then choose **Hosting → Sync DirectAdmin**. WordPress uses HTTPS Basic Auth, stores the Login Key with the same AES-256-GCM protection as the Oxxa password, and caches only non-secret account/usage data. Legacy requests add `json=yes`; modern REST requests do not need it. The snapshot represents the authenticated **user-level account**, not an inferred reseller-wide total. Hosting identifies whether the last sync used modern REST or legacy compatibility mode. Clearing the URL or username and saving removes the stored key and cached snapshot.
 
 **Hosting → Email accounts** lists real mailbox quota, usage, send counts, daily limits, and suspension state with `CMD_API_POP action=full_list`. Creating a mailbox requires a valid local part, a 12–128 character password with confirmation, a finite quota, and a daily send limit. The create POST contains `action=create`, `passwd`, and `passwd2`; the password is never persisted or returned, and is redacted from provider errors. Every list/create request revalidates that the domain is the authenticated account's primary domain. Demo mailbox creation is local and explicitly labeled.
 

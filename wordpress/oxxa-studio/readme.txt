@@ -4,7 +4,7 @@ Tags: multisite, oxxa, reseller, domains, hosting, web studio
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,9 +55,14 @@ No. Client invoices and revenue records are included, but payment collection req
 When DirectAdmin is configured, package limits, disk usage, bandwidth, and account-service counts come from the authenticated user-level account. Server load, per-site usage, backup status, and service health are not inferred. Standalone preview metrics are labeled demo data.
 
 = Which DirectAdmin permissions are required? =
-Use a restricted Login Key with CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE. Add CMD_API_POP only for mailbox listing and explicit creation. Restrict its source IP where possible. Mailbox passwords are never stored, and your main DirectAdmin password is not required.
+Account sync uses the modern /api/session/user-config and /api/session/user-usage reads first, with CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE as older-server fallback. Use a restricted Login Key and add CMD_API_POP only for mailbox listing and explicit creation. Restrict its source IP where possible. Mailbox passwords are never stored, and your main DirectAdmin password is not required.
 
 == Changelog ==
+
+= 1.6.0 =
+* Added modern DirectAdmin session user-config and user-usage synchronization.
+* Added byte-to-MB normalization for modern nested resource limits and usage.
+* Retained legacy account fallback and CMD_API_POP mailbox compatibility.
 
 = 1.5.0 =
 * Added Oxxa SSL certificate inventory with status, dates, SANs, and auto-renew state.
