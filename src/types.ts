@@ -3,6 +3,7 @@ export type PageId =
   | "sites"
   | "clients"
   | "domains"
+  | "ssl"
   | "hosting"
   | "billing"
   | "studio"

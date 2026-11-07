@@ -26,6 +26,8 @@ class Oxxa_Studio_REST
         register_rest_route(self::NS, '/status', array_merge($read, array('callback' => array($this, 'status'))));
         register_rest_route(self::NS, '/settings', array_merge($write, array('callback' => array($this, 'save_settings'))));
         register_rest_route(self::NS, '/connection/test', array_merge($write, array('callback' => array($this, 'test_connection'))));
+        register_rest_route(self::NS, '/ssl', array_merge($read, array('callback' => array($this, 'ssl'))));
+        register_rest_route(self::NS, '/ssl/sync', array_merge($write, array('callback' => array($this, 'ssl_sync'))));
         register_rest_route(self::NS, '/directadmin', array_merge($read, array('callback' => array($this, 'directadmin'))));
         register_rest_route(self::NS, '/directadmin/test', array_merge($write, array('callback' => array($this, 'directadmin_test'))));
         register_rest_route(self::NS, '/directadmin/sync', array_merge($write, array('callback' => array($this, 'directadmin_sync'))));
@@ -320,6 +322,36 @@ class Oxxa_Studio_REST
         return array_values($result);
     }
 
+    public function ssl()
+    {
+        $snapshot = get_network_option(null, 'oxxa_studio_ssl_snapshot', array());
+        $snapshot = is_array($snapshot) ? $snapshot : array();
+        $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        return rest_ensure_response(array_merge(array(
+            'configured' => Oxxa_Studio_Oxxa_API::has_credentials($settings),
+            'connected' => false,
+            'certificates' => array(),
+            'products' => array(),
+            'servers' => array(),
+            'lastSync' => '',
+            'testMode' => !empty($settings['test_mode']),
+        ), $snapshot, array(
+            'configured' => Oxxa_Studio_Oxxa_API::has_credentials($settings),
+            'testMode' => !empty($settings['test_mode']),
+        )));
+    }
+
+    public function ssl_sync()
+    {
+        $ssl = new Oxxa_Studio_SSL();
+        $snapshot = $ssl->sync();
+        if (is_wp_error($snapshot)) {
+            return $snapshot;
+        }
+        update_network_option(null, 'oxxa_studio_ssl_snapshot', $snapshot);
+        return rest_ensure_response($snapshot);
+    }
+
     public function directadmin()
     {
         $settings = Oxxa_Studio_Oxxa_API::get_settings();
@@ -412,12 +444,14 @@ class Oxxa_Studio_REST
     public function save_settings(WP_REST_Request $request)
     {
         $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        $previous_oxxa_username = $settings['username'];
         $text_fields = array('username' => 'username', 'registrantIdentity' => 'registrant_identity', 'adminIdentity' => 'admin_identity', 'techIdentity' => 'tech_identity', 'billingIdentity' => 'billing_identity', 'nsgroup' => 'nsgroup');
         foreach ($text_fields as $param => $key) {
             if ($request->offsetExists($param)) {
                 $settings[$key] = sanitize_text_field((string) $request->get_param($param));
             }
         }
+        $oxxa_account_changed = $previous_oxxa_username !== $settings['username'];
         $directadmin_changed = false;
         if ($request->offsetExists('directAdminUrl')) {
             $url = Oxxa_Studio_DirectAdmin_API::normalize_url($request->get_param('directAdminUrl'));
@@ -448,6 +482,7 @@ class Oxxa_Studio_REST
                 return $encrypted;
             }
             $settings['password'] = $encrypted;
+            $oxxa_account_changed = true;
         }
         $directadmin_password = (string) $request->get_param('directAdminPassword');
         if ($directadmin_password) {
@@ -464,6 +499,9 @@ class Oxxa_Studio_REST
         }
         if ($directadmin_changed) {
             delete_network_option(null, 'oxxa_studio_directadmin_snapshot');
+        }
+        if ($oxxa_account_changed) {
+            delete_network_option(null, 'oxxa_studio_ssl_snapshot');
         }
         update_network_option(null, 'oxxa_studio_settings', $settings);
         $network_name = sanitize_text_field((string) $request->get_param('networkName'));

@@ -88,6 +88,48 @@ export interface DirectAdminMailboxList {
   mailboxes: DirectAdminMailbox[];
 }
 
+export interface SslCertificate {
+  id: string;
+  productId: string;
+  name: string;
+  period: number;
+  domain: string;
+  sans: string;
+  autoRenew: boolean;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+export interface SslProduct {
+  id: string;
+  name: string;
+  validation: string;
+  wildcard: boolean;
+  cnameAuth: boolean;
+  vendor: string;
+  deliveryTime: string;
+  periods: { months: number; price: number }[];
+}
+
+export interface SslServer {
+  id: string;
+  type: "DirectAdmin" | "SatServer";
+  name: string;
+  host: string;
+  createdAt: string;
+}
+
+export interface SslSnapshot {
+  configured: boolean;
+  connected: boolean;
+  certificates: SslCertificate[];
+  products: SslProduct[];
+  servers: SslServer[];
+  lastSync: string;
+  testMode: boolean;
+}
+
 export const wpBoot = window.oxxaStudio;
 
 export async function wpRequest<T>(

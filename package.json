@@ -1,6 +1,6 @@
 {
   "name": "oxxa-studio",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "WordPress Multisite network management and Oxxa reseller web studio",
   "type": "module",

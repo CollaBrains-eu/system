@@ -7,7 +7,7 @@ A full-screen **WordPress Multisite network manager and white-label web studio**
 - **Guided onboarding:** real WordPress/PHP requirement checks, Oxxa authentication, registration defaults, theme readiness, and a safe API lookup
 - **Network dashboard:** site health, revenue, recent websites, and studio activity
 - **WordPress Multisite:** real site provisioning with `wpmu_create_blog()`, live/draft/maintenance states, network paths, and client ownership
-- **Oxxa reseller tools:** XML API availability checks, domain registration with confirmation, portfolio sync, and auto-renew controls
+- **Oxxa reseller tools:** XML API availability checks, domain registration with confirmation, portfolio sync, auto-renew controls, and read-only SSL inventory
 - **Clients and billing:** persistent client records and invoices, CSV exports, revenue reporting UI
 - **DirectAdmin hosting:** encrypted scoped Login Keys, connection testing, account/quota synchronization, and validated mailbox listing and creation
 - **Web studio:** reusable templates and an interactive visual editor for shared homepage content, colors, type, sizing, and button styles
@@ -64,6 +64,12 @@ Open **Domains → Sync Oxxa** to retrieve the complete account portfolio with t
 
 Portfolio sync does not inspect DNS zones or prove public resolution. Newly imported domains therefore show **DNS not verified**, not a fabricated connected state.
 
+### Oxxa SSL inventory
+
+Open **SSL certificates → Sync SSL inventory** to run the read-only Oxxa v2.05 commands `ssl_list`, `ssl_product_list`, and `server_list`. The network cache contains certificate domains, product names, periods, status, start/end dates, SANs, and auto-renew state; product validation/wildcard/CNAME configuration and period prices; and SSL-installation server IDs, types, names, hosts, and creation dates. No CSR, identity, authentication content, password, private key, or DirectAdmin Login Key is cached.
+
+This milestone does not call `ssl_new`, `ssl_cancel`, `ssl_autorenew`, `server_create`, `server_update`, or `server_delete`. Product prices are inventory data, not a confirmed checkout. Changing the Oxxa username or password clears the cached SSL snapshot so one reseller account cannot appear as another.
+
 ### Connecting DirectAdmin
 
 Open **Network settings → DirectAdmin** and enter the HTTPS base URL (normally port `2222`), the hosting-account username, and a restricted **Login Key**, not the main DirectAdmin password. Create the key under DirectAdmin Login Keys, restrict it to the WordPress server's IP where possible, and allow only:
@@ -98,6 +104,7 @@ wordpress/
   oxxa-studio/               Network-only WordPress plugin
     includes/class-oxxa-api.php
     includes/class-oxxa-directadmin.php
+    includes/class-oxxa-ssl.php
     includes/class-oxxa-rest.php
     includes/class-oxxa-plugin.php
   oxxa-studio-theme/         Companion block theme
@@ -106,4 +113,4 @@ scripts/package-plugin.mjs   Installable ZIP builder
 
 ## Oxxa API reference
 
-The adapter uses Oxxa's documented XML endpoint, `https://api.oxxa.com/command.php`, with the `MD5` password form and `test=Y` support. Commands include `domain_check`, `domain_list`, `register`, and `autorenew`. See Oxxa's current API documentation for identity, nameserver, TLD-specific, and order requirements.
+The adapter uses Oxxa's documented XML endpoint, `https://api.oxxa.com/command.php`, with the `MD5` password form and `test=Y` support. Commands include `domain_check`, `domain_list`, `register`, and `autorenew`. The read-only SSL adapter uses `ssl_list`, `ssl_product_list`, and `server_list` from the supplied Oxxa API v2.05 documentation. See Oxxa's current API documentation for identity, nameserver, TLD-specific, SSL, and order requirements.

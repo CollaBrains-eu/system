@@ -85,6 +85,7 @@ import {
 import Dashboard from "./pages/Dashboard";
 import Sites from "./pages/Sites";
 import Domains from "./pages/Domains";
+import Ssl from "./pages/Ssl";
 import Clients from "./pages/Clients";
 import Hosting from "./pages/Hosting";
 import Billing from "./pages/Billing";
@@ -117,6 +118,7 @@ const navigation: {
     section: "RESELLER",
     items: [
       { id: "domains", label: "Domains", icon: Globe2, count: "386" },
+      { id: "ssl", label: "SSL certificates", icon: ShieldCheck },
       { id: "hosting", label: "Hosting", icon: Server },
       { id: "billing", label: "Billing", icon: CreditCard },
     ],
@@ -134,6 +136,7 @@ const pageLabels: Record<PageId, string> = {
   sites: "Websites",
   clients: "Clients",
   domains: "Domains",
+  ssl: "SSL certificates",
   hosting: "Hosting",
   billing: "Billing",
   studio: "Design studio",
@@ -959,6 +962,9 @@ export default function App() {
               syncError={domainSyncError}
               notify={notify}
             />
+          )}
+          {page === "ssl" && (
+            <Ssl notify={notify} onSettings={() => openSettings()} />
           )}
           {page === "clients" && (
             <Clients

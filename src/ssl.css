@@ -1,0 +1,310 @@
+/* Oxxa SSL inventory */
+.ssl-connect {
+  display: flex;
+  min-height: 430px;
+  padding: 52px 28px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(circle at 50% 20%, #f1f6e9 0, #fff 58%);
+}
+.ssl-connect > span:first-child {
+  display: grid;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 16px;
+  place-items: center;
+  border-radius: 17px;
+  background: #eaf2df;
+  color: #6b8252;
+}
+.ssl-connect > svg {
+  color: #7b9262;
+}
+.ssl-connect h2 {
+  margin: 15px 0 7px;
+  font-size: 22px;
+  letter-spacing: -0.6px;
+}
+.ssl-connect > p {
+  max-width: 590px;
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.75;
+}
+.ssl-connect > div:not(.ssl-error) {
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+}
+.ssl-connect > small {
+  margin-top: 18px;
+  color: #92998d;
+  font-size: 7.5px;
+}
+.ssl-error {
+  max-width: 650px;
+  padding: 10px 13px;
+  margin: 0 0 15px;
+  border: 1px solid #ebd3c7;
+  border-radius: 8px;
+  background: #fff8f4;
+  color: #a15d42;
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: left;
+}
+.ssl-error.standalone {
+  max-width: none;
+  margin-bottom: 14px;
+}
+.ssl-readonly-note {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 15px;
+  margin-bottom: 14px;
+  border: 1px solid #e0e7d7;
+  border-radius: 10px;
+  background: #f5f8ef;
+  color: #768860;
+}
+.ssl-readonly-note > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.ssl-readonly-note strong {
+  color: #45523a;
+  font-size: 9px;
+}
+.ssl-readonly-note span {
+  color: #89927f;
+  font-size: 8px;
+  line-height: 1.5;
+}
+.ssl-stats {
+  margin-bottom: 14px;
+}
+.compact-stat-icon.purple {
+  background: #eee9f3;
+  color: #8b72a0;
+}
+.ssl-certificates {
+  margin-bottom: 14px;
+}
+.ssl-section-heading {
+  gap: 18px;
+}
+.ssl-section-heading .inline-search {
+  width: 210px;
+  flex-shrink: 0;
+}
+.ssl-table {
+  min-width: 860px;
+}
+.ssl-domain-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7c9064;
+}
+.ssl-domain-cell > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+.ssl-domain-cell strong {
+  color: #3b4634;
+  font-size: 9px;
+}
+.ssl-domain-cell small {
+  max-width: 220px;
+  color: #939b8c;
+  font-size: 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ssl-certificate-name {
+  display: block;
+  color: #4b5544;
+  font-size: 8.5px;
+}
+.ssl-period-label,
+.ssl-days-left {
+  display: block;
+  margin-top: 3px;
+  color: #959d8f;
+  font-size: 7px;
+}
+.ssl-days-left {
+  color: #a36a43;
+}
+.ssl-secondary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr);
+  gap: 14px;
+}
+.ssl-products,
+.ssl-servers {
+  overflow: hidden;
+}
+.ssl-product-list {
+  padding: 0 18px;
+}
+.ssl-product-row {
+  display: grid;
+  padding: 14px 0;
+  align-items: center;
+  grid-template-columns: 32px minmax(130px, 1fr) auto minmax(145px, auto);
+  gap: 10px;
+  border-bottom: 1px solid #edf0e8;
+}
+.ssl-product-row:last-child {
+  border-bottom: 0;
+}
+.ssl-product-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: #eff3e9;
+  color: #7a8f62;
+}
+.ssl-product-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ssl-product-name strong {
+  color: #3c4735;
+  font-size: 9px;
+}
+.ssl-product-name small {
+  color: #939b8c;
+  font-size: 7px;
+}
+.ssl-product-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ssl-periods {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 4px;
+}
+.ssl-periods > span {
+  color: #8b9483;
+  font-size: 7.5px;
+  white-space: nowrap;
+}
+.ssl-periods strong {
+  margin-left: 6px;
+  color: #46523d;
+  font-size: 9px;
+}
+.ssl-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 18px;
+  border-top: 1px solid #edf0e8;
+  color: #939b8c;
+  font-size: 7.5px;
+  line-height: 1.5;
+}
+.ssl-server-list {
+  padding: 0 18px;
+}
+.ssl-server-row {
+  display: flex;
+  padding: 15px 0;
+  align-items: flex-start;
+  gap: 10px;
+  border-bottom: 1px solid #edf0e8;
+}
+.ssl-server-row:last-child {
+  border-bottom: 0;
+}
+.ssl-server-row > span {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 8px;
+  background: #eff3e9;
+  color: #7a8f62;
+}
+.ssl-server-row > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+.ssl-server-row strong {
+  color: #3c4735;
+  font-size: 9px;
+}
+.ssl-server-row small {
+  max-width: 100%;
+  color: #929a8b;
+  font-size: 7px;
+  overflow-wrap: anywhere;
+}
+.ssl-server-row time {
+  color: #969e90;
+  font-size: 7px;
+  white-space: nowrap;
+}
+.ssl-server-list .small-empty {
+  display: flex;
+  min-height: 120px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-align: center;
+}
+@media (max-width: 1120px) {
+  .ssl-secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .ssl-readonly-note {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .ssl-readonly-note > .badge {
+    margin-left: 27px;
+  }
+  .ssl-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .ssl-section-heading .inline-search {
+    width: 100%;
+  }
+  .ssl-product-row {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+  .ssl-product-flags,
+  .ssl-periods {
+    grid-column: 2;
+    align-items: flex-start;
+  }
+  .ssl-connect > div:not(.ssl-error) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

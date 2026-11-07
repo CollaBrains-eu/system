@@ -4,7 +4,7 @@ Tags: multisite, oxxa, reseller, domains, hosting, web studio
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,7 @@ Oxxa Studio adds a Network Admin workspace for provisioning client websites, man
 * Guided first-run onboarding and real system-health checks
 * Explicit, persistent Oxxa portfolio synchronization
 * DirectAdmin account, usage, and validated mailbox integration
+* Read-only Oxxa SSL certificate, product, and install-server inventory
 * Client and invoice records stored in network options
 * Shared design tokens and homepage content for network templates
 * Maintenance mode and live/draft site state
@@ -57,6 +58,11 @@ When DirectAdmin is configured, package limits, disk usage, bandwidth, and accou
 Use a restricted Login Key with CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE. Add CMD_API_POP only for mailbox listing and explicit creation. Restrict its source IP where possible. Mailbox passwords are never stored, and your main DirectAdmin password is not required.
 
 == Changelog ==
+
+= 1.5.0 =
+* Added Oxxa SSL certificate inventory with status, dates, SANs, and auto-renew state.
+* Added SSL product configurations, period prices, and automatic-installation server metadata.
+* Added persistent read-only SSL sync without caching CSR, identity, validation, or credential content.
 
 = 1.4.0 =
 * Added DirectAdmin mailbox listing with quota, usage, send-limit, and suspension data.
