@@ -41,6 +41,9 @@ This creates:
 
 - `release/oxxa-studio.zip` — network-activated management plugin
 - `release/oxxa-studio-theme.zip` — companion block theme
+- `release/oxxa-studio-self-installer.zip` — interactive server installer, both ZIPs, and the standalone installation prompt
+
+For a fresh DirectAdmin-hosted subdomain network, upload and extract the self-installer archive outside the new site's document root, then run `bash install.sh` as the DirectAdmin account user. It installs WordPress subdomain Multisite and both Oxxa Studio packages. The source script is `scripts/self-install.sh`; the full agent/manual prompt and provider steps are in `SELF-INSTALLATION.md`. The database, DNS, virtual host, and TLS certificate must exist first, and provider credentials are configured afterward in Network Admin.
 
 Then:
 
