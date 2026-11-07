@@ -4,7 +4,7 @@ Tags: multisite, oxxa, reseller, domains, hosting, web studio
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,7 @@ Oxxa Studio adds a Network Admin workspace for provisioning client websites, man
 * Network capability checks on every REST endpoint
 * Guided first-run onboarding and real system-health checks
 * Explicit, persistent Oxxa portfolio synchronization
+* Read-only DirectAdmin account and usage integration
 * Client and invoice records stored in network options
 * Shared design tokens and homepage content for network templates
 * Maintenance mode and live/draft site state
@@ -50,9 +51,17 @@ No. Oxxa documents test=Y for register and transfer commands. Commands such as a
 No. Client invoices and revenue records are included, but payment collection requires your chosen invoicing/payment provider.
 
 = Are hosting graphs live server metrics? =
-The bundled hosting graphs are presentation defaults. Real resource graphs require metrics from your specific Oxxa hosting package/control panel. Domain and Multisite records are live when configured.
+When DirectAdmin is configured, package limits, disk usage, bandwidth, and account-service counts come from the authenticated user-level account. Server load, per-site usage, backup status, and service health are not inferred. Standalone preview metrics are labeled demo data.
+
+= Which DirectAdmin permissions are required? =
+Use a restricted Login Key with CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE. Restrict its source IP where possible. The adapter is read-only and does not require your main DirectAdmin password.
 
 == Changelog ==
+
+= 1.3.0 =
+* Added encrypted DirectAdmin Login Key configuration and connection testing.
+* Added read-only account configuration, package limits, storage, bandwidth, and service-count synchronization.
+* Removed sample hosting metrics and service-health claims from live mode.
 
 = 1.2.0 =
 * Added explicit full Oxxa domain portfolio synchronization.

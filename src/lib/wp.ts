@@ -9,6 +9,11 @@ export interface WordPressBoot {
   adminUrl?: string;
   demo: boolean;
   testMode?: boolean;
+  directAdmin?: {
+    configured: boolean;
+    url: string;
+    username: string;
+  };
   settings?: {
     username: string;
     registrantIdentity: string;
@@ -38,6 +43,34 @@ export interface SystemStatus {
   phpVersion: string;
   wpVersion: string;
   serverIp: string;
+}
+
+export interface DirectAdminSnapshot {
+  configured: boolean;
+  connected: boolean;
+  url: string;
+  username: string;
+  lastSync: string;
+  account?: {
+    package: string;
+    domain: string;
+    type: string;
+    suspended: boolean;
+  };
+  usage?: {
+    diskUsedMb: number | null;
+    diskLimitMb: number | null;
+    diskUnlimited: boolean;
+    bandwidthUsedMb: number | null;
+    bandwidthLimitMb: number | null;
+    bandwidthUnlimited: boolean;
+    domainsUsed: number;
+    domainsLimit: number | null;
+    domainsUnlimited: boolean;
+    emailAccounts: number;
+    databases: number;
+    ftpAccounts: number;
+  };
 }
 
 export const wpBoot = window.oxxaStudio;

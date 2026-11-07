@@ -37,6 +37,9 @@ class Oxxa_Studio_Oxxa_API
             'brand_color' => '#C6EF85',
             'email_updates' => true,
             'domain_alerts' => true,
+            'directadmin_url' => '',
+            'directadmin_username' => '',
+            'directadmin_password' => '',
         );
         $saved = get_network_option(null, 'oxxa_studio_settings', array());
         return wp_parse_args(is_array($saved) ? $saved : array(), $defaults);
@@ -69,7 +72,7 @@ class Oxxa_Studio_Oxxa_API
         return 'enc:v1:' . base64_encode(wp_json_encode(array('iv' => base64_encode($iv), 'tag' => base64_encode($tag), 'data' => base64_encode($cipher))));
     }
 
-    private static function decrypt($payload)
+    public static function decrypt($payload)
     {
         if (strpos($payload, 'enc:v1:') !== 0 || !function_exists('openssl_decrypt')) {
             return '';

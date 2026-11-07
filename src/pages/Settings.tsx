@@ -13,6 +13,7 @@ import {
   Palette,
   PlugZap,
   Save,
+  Server,
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
@@ -22,10 +23,12 @@ import { wpBoot, wpRequest } from "../lib/wp";
 
 export default function Settings({
   notify,
+  initialTab = "Oxxa connection",
 }: {
   notify: (title: string, message: string) => void;
+  initialTab?: string;
 }) {
-  const [tab, setTab] = useState("Oxxa connection");
+  const [tab, setTab] = useState(initialTab);
   const [username, setUsername] = useState(wpBoot?.settings?.username || "");
   const [password, setPassword] = useState("");
   const [testMode, setTestMode] = useState(wpBoot?.testMode ?? true);
@@ -38,6 +41,15 @@ export default function Settings({
   const [nsgroup, setNsgroup] = useState(wpBoot?.settings?.nsgroup || "");
   const [testing, setTesting] = useState(false);
   const [tested, setTested] = useState(false);
+  const [directAdminUrl, setDirectAdminUrl] = useState(
+    wpBoot?.directAdmin?.url || "",
+  );
+  const [directAdminUsername, setDirectAdminUsername] = useState(
+    wpBoot?.directAdmin?.username || "",
+  );
+  const [directAdminPassword, setDirectAdminPassword] = useState("");
+  const [directAdminTesting, setDirectAdminTesting] = useState(false);
+  const [directAdminTested, setDirectAdminTested] = useState(false);
   const [networkName, setNetworkName] = useState(
     wpBoot?.networkName || "North & Co. Studio",
   );
@@ -84,6 +96,41 @@ export default function Settings({
     }
   }
 
+  async function testDirectAdmin() {
+    setDirectAdminTesting(true);
+    setDirectAdminTested(false);
+    try {
+      if (wpBoot)
+        await wpRequest("directadmin/test", {
+          method: "POST",
+          body: JSON.stringify({
+            url: directAdminUrl || undefined,
+            username: directAdminUsername || undefined,
+            password: directAdminPassword || undefined,
+          }),
+        });
+      else await new Promise((resolve) => setTimeout(resolve, 1000));
+      setDirectAdminTested(true);
+      notify(
+        wpBoot
+          ? "DirectAdmin connection successful"
+          : "Demo connection verified",
+        wpBoot
+          ? "Account configuration and user-level usage were read successfully. Save settings before synchronizing Hosting."
+          : "No DirectAdmin request was made. Add a scoped Login Key in WordPress for live data.",
+      );
+    } catch (error) {
+      notify(
+        "DirectAdmin needs attention",
+        error instanceof Error
+          ? error.message
+          : "Check the URL, Login Key, IP allowlist and command permissions.",
+      );
+    } finally {
+      setDirectAdminTesting(false);
+    }
+  }
+
   async function saveSettings() {
     try {
       if (wpBoot)
@@ -102,10 +149,14 @@ export default function Settings({
             brandColor,
             emailUpdates,
             domainAlerts,
+            directAdminUrl,
+            directAdminUsername,
+            directAdminPassword: directAdminPassword || undefined,
           }),
         });
       else await new Promise((resolve) => setTimeout(resolve, 400));
       setPassword("");
+      setDirectAdminPassword("");
       notify(
         "Settings saved",
         "Your network and reseller preferences have been updated.",
@@ -123,6 +174,11 @@ export default function Settings({
       label: "Oxxa connection",
       icon: PlugZap,
       description: "API & reseller account",
+    },
+    {
+      label: "DirectAdmin",
+      icon: Server,
+      description: "Hosting account & usage",
     },
     {
       label: "Multisite network",
@@ -380,6 +436,165 @@ export default function Settings({
                     ? "You can set OXXA_STUDIO_PUBLIC_IP in wp-config.php after confirming it with your host."
                     : "The address above is reserved for documentation and used only in preview mode."}
                 </p>
+              </section>
+            </>
+          )}
+          {tab === "DirectAdmin" && (
+            <>
+              <section className="card settings-section">
+                <header>
+                  <div>
+                    <h2>DirectAdmin hosting API</h2>
+                    <p>
+                      Connect one DirectAdmin account for real user-level
+                      package and usage data.
+                    </p>
+                  </div>
+                  <Badge
+                    tone={
+                      directAdminTested
+                        ? "green"
+                        : wpBoot?.directAdmin?.configured
+                          ? "blue"
+                          : "orange"
+                    }
+                    dot
+                  >
+                    {directAdminTested
+                      ? "Verified"
+                      : wpBoot?.directAdmin?.configured
+                        ? "Configured"
+                        : wpBoot
+                          ? "Not configured"
+                          : "Demo mode"}
+                  </Badge>
+                </header>
+                <div className="settings-info-banner">
+                  <span>
+                    <LockKeyhole size={18} />
+                  </span>
+                  <div>
+                    <strong>Use a restricted Login Key</strong>
+                    <p>
+                      Create a key under DirectAdmin → Advanced Features → Login
+                      Keys. Allow only CMD_API_SHOW_USER_CONFIG and
+                      CMD_API_SHOW_USER_USAGE, and restrict its IP where
+                      possible. The key is encrypted by WordPress.
+                    </p>
+                  </div>
+                </div>
+                <div className="settings-form-grid">
+                  <label className="full-field">
+                    DirectAdmin base URL
+                    <div className="input-with-icon">
+                      <Cloud size={16} />
+                      <input
+                        type="url"
+                        value={directAdminUrl}
+                        onChange={(event) => {
+                          setDirectAdminUrl(event.target.value);
+                          setDirectAdminTested(false);
+                        }}
+                        placeholder="https://hosting.example.com:2222"
+                      />
+                    </div>
+                    <small>
+                      HTTPS only, without a path or credentials. Port 2222 is
+                      added when omitted.
+                    </small>
+                  </label>
+                  <label>
+                    DirectAdmin username
+                    <div className="input-with-icon">
+                      <KeyRound size={16} />
+                      <input
+                        value={directAdminUsername}
+                        onChange={(event) => {
+                          setDirectAdminUsername(event.target.value);
+                          setDirectAdminTested(false);
+                        }}
+                        placeholder="Hosting account username"
+                        autoComplete="username"
+                      />
+                    </div>
+                  </label>
+                  <label>
+                    Login Key
+                    <div className="input-with-icon">
+                      <LockKeyhole size={16} />
+                      <input
+                        type="password"
+                        value={directAdminPassword}
+                        onChange={(event) => {
+                          setDirectAdminPassword(event.target.value);
+                          setDirectAdminTested(false);
+                        }}
+                        placeholder={
+                          wpBoot?.directAdmin?.configured
+                            ? "Leave blank to keep the current key"
+                            : "Restricted DirectAdmin Login Key"
+                        }
+                        autoComplete="new-password"
+                      />
+                    </div>
+                    <small>
+                      Not your main password. Clear the URL or username and save
+                      to remove the stored key.
+                    </small>
+                  </label>
+                </div>
+                <div className="settings-toggle-row">
+                  <div>
+                    <strong>Read-only foundation</strong>
+                    <p>
+                      Tests and syncs only read account configuration and
+                      user-level usage. No account, DNS, mail, database, FTP,
+                      package or backup command is executed.
+                    </p>
+                  </div>
+                  <a
+                    className="text-button"
+                    href="https://docs.directadmin.com/developer/api/legacy-api.html"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    API documentation <ExternalLink size={13} />
+                  </a>
+                </div>
+                <footer className="settings-section-footer">
+                  <div>
+                    {directAdminTested && (
+                      <span className="connection-success">
+                        <Check size={15} /> Account and usage verified
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="button button-secondary"
+                    disabled={directAdminTesting}
+                    onClick={testDirectAdmin}
+                  >
+                    {directAdminTesting ? (
+                      <LoaderCircle size={16} className="spin" />
+                    ) : (
+                      <PlugZap size={16} />
+                    )}
+                    {directAdminTesting
+                      ? "Reading account…"
+                      : "Test connection"}
+                  </button>
+                </footer>
+              </section>
+              <section className="card settings-section">
+                <header>
+                  <div>
+                    <h2>Save, then synchronize</h2>
+                    <p>
+                      Test first, choose Save changes, then open Hosting → Sync
+                      DirectAdmin to cache the verified data for your network.
+                    </p>
+                  </div>
+                </header>
               </section>
             </>
           )}

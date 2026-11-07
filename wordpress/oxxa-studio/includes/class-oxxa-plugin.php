@@ -86,6 +86,11 @@ class Oxxa_Studio_Plugin
                 'adminIdentity' => $settings['admin_identity'],
                 'nsgroup' => $settings['nsgroup'],
             ),
+            'directAdmin' => array(
+                'configured' => Oxxa_Studio_DirectAdmin_API::has_credentials($settings),
+                'url' => $settings['directadmin_url'],
+                'username' => $settings['directadmin_username'],
+            ),
         ));
     }
 

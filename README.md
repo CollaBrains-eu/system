@@ -9,10 +9,10 @@ A full-screen **WordPress Multisite network manager and white-label web studio**
 - **WordPress Multisite:** real site provisioning with `wpmu_create_blog()`, live/draft/maintenance states, network paths, and client ownership
 - **Oxxa reseller tools:** XML API availability checks, domain registration with confirmation, portfolio sync, and auto-renew controls
 - **Clients and billing:** persistent client records and invoices, CSV exports, revenue reporting UI
-- **Hosting workspace:** package and resource presentation, service health, and backup actions
+- **DirectAdmin hosting:** encrypted scoped Login Keys, connection testing, and read-only package, quota, bandwidth, and account-service synchronization
 - **Web studio:** reusable templates and an interactive visual editor for shared homepage content, colors, type, sizing, and button styles
 - **Companion block theme:** applies published studio designs on network sites; native WordPress Site Editor support for all other content
-- **Security:** `manage_network` checks on every REST route, nonces, encrypted Oxxa passwords, sanitized inputs, and safe XML parsing
+- **Security:** `manage_network` checks on every REST route, nonces, encrypted Oxxa passwords and DirectAdmin Login Keys, sanitized inputs, and safe XML parsing
 
 ## Interactive preview
 
@@ -64,13 +64,24 @@ Open **Domains → Sync Oxxa** to retrieve the complete account portfolio with t
 
 Portfolio sync does not inspect DNS zones or prove public resolution. Newly imported domains therefore show **DNS not verified**, not a fabricated connected state.
 
+### Connecting DirectAdmin
+
+Open **Network settings → DirectAdmin** and enter the HTTPS base URL (normally port `2222`), the hosting-account username, and a restricted **Login Key**, not the main DirectAdmin password. Create the key under DirectAdmin Login Keys, restrict it to the WordPress server's IP where possible, and allow only:
+
+- `CMD_API_SHOW_USER_CONFIG`
+- `CMD_API_SHOW_USER_USAGE`
+
+Test the connection, save, then choose **Hosting → Sync DirectAdmin**. WordPress uses HTTPS Basic Auth and `json=yes`, stores the Login Key with the same AES-256-GCM protection as the Oxxa password, and caches only non-secret account/usage data. The snapshot represents the authenticated **user-level account**, not an inferred reseller-wide total. Clearing the URL or username and saving removes the stored key and cached snapshot.
+
+This milestone is deliberately read-only. It does not create or modify hosting accounts, packages, DNS records, mailboxes, databases, FTP users, or backups. Server load, service health, and per-site resource usage are not inferred from account totals.
+
 ### Publishing designs
 
 Open **Design studio**, choose a project, and edit the shared template. **Publish** saves the design through the WordPress REST API. Sites using that template and the companion theme receive the shared homepage heading, eyebrow, colors, font, heading size, and button radius. Use the native **WordPress Site Editor** for additional pages, posts, navigation, and unique per-site blocks.
 
 ## Live-data boundaries
 
-The Multisite records, Oxxa availability/registration/auto-renew actions, client/invoice records, and published design tokens have PHP adapters. The standalone preview uses sample data. Hosting usage graphs, visits, revenue totals, payment reminders, backups, and payment collection need adapters for the specific hosting/control-panel, analytics, backup, and payment providers; they are not silently represented as completed live integrations.
+The Multisite records, Oxxa availability/registration/auto-renew actions, DirectAdmin user-level account usage, client/invoice records, and published design tokens have PHP adapters. The standalone preview uses sample data. Per-site hosting usage graphs, visits, revenue totals, payment reminders, backups, and payment collection still need adapters for the specific metrics, analytics, backup, and payment providers; they are not silently represented as completed live integrations.
 
 Invoice records use network options. There is no bundled payment gateway or automatic charge to clients. Domain registration is the only paid Oxxa action exposed, and it always requires confirmation.
 
@@ -83,6 +94,7 @@ src/                         React + TypeScript application
 wordpress/
   oxxa-studio/               Network-only WordPress plugin
     includes/class-oxxa-api.php
+    includes/class-oxxa-directadmin.php
     includes/class-oxxa-rest.php
     includes/class-oxxa-plugin.php
   oxxa-studio-theme/         Companion block theme
