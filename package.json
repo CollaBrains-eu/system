@@ -1,0 +1,32 @@
+{
+  "name": "oxxa-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WordPress Multisite network management and Oxxa reseller web studio",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "build:plugin": "npm run build && node scripts/package-plugin.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "lint": "tsc --noEmit",
+    "test": "npm run lint && node scripts/check-php.mjs",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/*.mjs\" \"*.{json,ts,html,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/*.mjs\" \"*.{json,ts,html,md}\""
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.2.6",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "php-parser": "^3.7.0",
+    "prettier": "^3.9.10",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.5"
+  }
+}

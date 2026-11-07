@@ -1,0 +1,46 @@
+/*
+Theme Name: Oxxa Studio Blocks
+Theme URI: https://github.com/CollaBrains-eu/system
+Author: CollaBrains
+Description: A flexible block theme for Oxxa Studio Multisite client websites.
+Version: 1.0.0
+Requires at least: 6.4
+Requires PHP: 7.4
+License: GPL-2.0-or-later
+Text Domain: oxxa-studio
+*/
+
+:root { --studio-accent: #a45c3f; --studio-background: #e8e1d5; --studio-font: Manrope; --studio-heading-size: 64px; --studio-radius: 2px; }
+body { margin: 0; background: var(--studio-background); color: var(--studio-accent); font-family: var(--studio-font), Arial, sans-serif; }
+.wp-site-blocks { min-height: 100vh; display: flex; flex-direction: column; }
+.wp-site-blocks > main { flex: 1; }
+a { color: inherit; }
+.studio-shell { width: min(1280px, calc(100% - 64px)); margin-inline: auto; }
+.studio-header { min-height: 92px; align-items: center; }
+.studio-site-title { font-size: 25px; font-weight: 700; letter-spacing: -1.5px; }
+.studio-site-title a::after { content: '.'; }
+.studio-navigation { font-size: 13px; }
+.studio-hero { min-height: 650px; align-items: stretch !important; padding-block: 48px 70px; }
+.studio-hero-copy { align-self: center; padding-right: clamp(10px,4vw,60px); }
+.studio-eyebrow { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; opacity: .72; }
+.studio-heading { font-family: var(--studio-font), Georgia, serif; font-size: clamp(44px,var(--studio-heading-size),88px); line-height: 1.02; letter-spacing: -.055em; font-weight: 400; margin: 28px 0 24px; }
+.studio-intro { max-width: 430px; font-size: 15px; line-height: 1.8; opacity: .72; }
+.studio-button .wp-block-button__link { background: var(--studio-accent); color: var(--studio-background); border-radius: var(--studio-radius); padding: 15px 21px; font-size: 12px; }
+.studio-visual { min-height: 480px; background: color-mix(in srgb,var(--studio-accent) 12%,transparent); position: relative; overflow: hidden; }
+.studio-visual::before { content: ''; position: absolute; width: 78%; aspect-ratio: 1; border: 1px solid var(--studio-accent); border-radius: 50%; top: 8%; left: 19%; opacity: .28; }
+.studio-visual::after { content: ''; position: absolute; width: 61%; aspect-ratio: .75; border: 1px solid var(--studio-accent); border-radius: 50% 50% 3% 3%; top: 18%; left: 6%; transform: rotate(25deg); background: color-mix(in srgb,var(--studio-accent) 13%,transparent); opacity: .55; }
+.studio-visual-letter { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(150px,20vw,280px); line-height: 1; font-weight: 200; opacity: .14; z-index: 1; }
+.studio-selected { margin-top: 25px; padding-block: 18px; border-top: 1px solid color-mix(in srgb,var(--studio-accent) 22%,transparent); font-size: 9px; letter-spacing: 1.5px; }
+.studio-footer { padding-block: 40px; font-size: 11px; border-top: 1px solid color-mix(in srgb,var(--studio-accent) 20%,transparent); }
+.studio-content { padding-block: 70px; }
+.studio-content .wp-block-post-title { font-size: clamp(40px,6vw,72px); font-weight: 400; letter-spacing: -.04em; }
+.studio-content .wp-block-post-content { line-height: 1.85; font-size: 16px; }
+@media (max-width: 780px) {
+  .studio-shell { width: min(100% - 36px,1280px); }
+  .studio-header { min-height: 74px; }
+  .studio-hero { display: flex !important; flex-direction: column; min-height: 0; }
+  .studio-hero > .wp-block-column { flex-basis: auto !important; }
+  .studio-heading { font-size: clamp(44px,13vw,68px); }
+  .studio-visual { min-height: 390px; margin-top: 30px; }
+  .studio-navigation { display: none; }
+}
