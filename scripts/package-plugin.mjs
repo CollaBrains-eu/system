@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
@@ -32,3 +32,27 @@ for (const folder of ["oxxa-studio", "oxxa-studio-theme"]) {
   if (result.status !== 0) throw new Error(`Could not package ${folder}.zip`);
   console.log(`Created release/${folder}.zip`);
 }
+
+const installer = resolve(release, "oxxa-studio-installer");
+mkdirSync(installer, { recursive: true });
+for (const archive of ["oxxa-studio.zip", "oxxa-studio-theme.zip"]) {
+  cpSync(resolve(release, archive), resolve(installer, archive));
+}
+cpSync(
+  resolve(root, "scripts/self-install.sh"),
+  resolve(installer, "install.sh"),
+);
+chmodSync(resolve(installer, "install.sh"), 0o755);
+cpSync(
+  resolve(root, "SELF-INSTALLATION.md"),
+  resolve(installer, "SELF-INSTALLATION.md"),
+);
+const installerResult = spawnSync(
+  "zip",
+  ["-qr", "oxxa-studio-self-installer.zip", "oxxa-studio-installer"],
+  { cwd: release, stdio: "inherit" },
+);
+if (installerResult.status !== 0) {
+  throw new Error("Could not package oxxa-studio-self-installer.zip");
+}
+console.log("Created release/oxxa-studio-self-installer.zip");

@@ -85,6 +85,7 @@ import {
 import Dashboard from "./pages/Dashboard";
 import Sites from "./pages/Sites";
 import Domains from "./pages/Domains";
+import Ssl from "./pages/Ssl";
 import Clients from "./pages/Clients";
 import Hosting from "./pages/Hosting";
 import Billing from "./pages/Billing";
@@ -117,6 +118,7 @@ const navigation: {
     section: "RESELLER",
     items: [
       { id: "domains", label: "Domains", icon: Globe2, count: "386" },
+      { id: "ssl", label: "SSL certificates", icon: ShieldCheck },
       { id: "hosting", label: "Hosting", icon: Server },
       { id: "billing", label: "Billing", icon: CreditCard },
     ],
@@ -134,6 +136,7 @@ const pageLabels: Record<PageId, string> = {
   sites: "Websites",
   clients: "Clients",
   domains: "Domains",
+  ssl: "SSL certificates",
   hosting: "Hosting",
   billing: "Billing",
   studio: "Design studio",
@@ -174,6 +177,7 @@ export default function App() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [createMenu, setCreateMenu] = useState(false);
   const [workspaceMenu, setWorkspaceMenu] = useState(false);
+  const [settingsTab, setSettingsTab] = useState("Oxxa connection");
   const [workspace, setWorkspace] = useState("Production network");
   const [mobileNav, setMobileNav] = useState(false);
   const [sidebarCompact, setSidebarCompact] = useState(false);
@@ -201,6 +205,12 @@ export default function App() {
     setSelectedClient(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  function openSettings(tab = "Oxxa connection") {
+    setSettingsTab(tab);
+    setWorkspaceMenu(false);
+    navigate("settings");
+  }
 
   useEffect(() => {
     const keyboard = (event: KeyboardEvent) => {
@@ -562,8 +572,7 @@ export default function App() {
               <button
                 className="workspace-settings"
                 onClick={() => {
-                  navigate("settings");
-                  setWorkspaceMenu(false);
+                  openSettings();
                 }}
               >
                 <Settings2 size={14} /> Network settings
@@ -605,21 +614,36 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          {!sidebarCompact && (
-            <div className="sidebar-resource">
-              <div>
-                <span>Network storage</span>
-                <strong>68%</strong>
+          {!sidebarCompact &&
+            (wpBoot ? (
+              <div className="sidebar-resource">
+                <div>
+                  <span>DirectAdmin hosting</span>
+                  <strong>Account + mail</strong>
+                </div>
+                <small>
+                  Synchronize verified account usage and manage explicit mailbox
+                  creation. No sample live metrics are shown.
+                </small>
+                <button onClick={() => navigate("hosting")}>
+                  Open DirectAdmin hosting <ArrowUpRight size={13} />
+                </button>
               </div>
-              <div className="sidebar-progress">
-                <i />
+            ) : (
+              <div className="sidebar-resource">
+                <div>
+                  <span>Demo network storage</span>
+                  <strong>68%</strong>
+                </div>
+                <div className="sidebar-progress">
+                  <i />
+                </div>
+                <small>170 GB of 250 GB · sample data</small>
+                <button onClick={() => navigate("hosting")}>
+                  View demo resources <ArrowUpRight size={13} />
+                </button>
               </div>
-              <small>170 GB of 250 GB used</small>
-              <button onClick={() => navigate("hosting")}>
-                Manage resources <ArrowUpRight size={13} />
-              </button>
-            </div>
-          )}
+            ))}
           <button
             className={`nav-item settings-nav-item ${page === "setup" ? "active" : ""}`}
             onClick={() => navigate("setup")}
@@ -631,7 +655,7 @@ export default function App() {
           </button>
           <button
             className={`nav-item ${page === "settings" ? "active" : ""}`}
-            onClick={() => navigate("settings")}
+            onClick={() => openSettings()}
             title="Network settings"
           >
             <Settings2 size={18} />
@@ -939,15 +963,24 @@ export default function App() {
               notify={notify}
             />
           )}
+          {page === "ssl" && (
+            <Ssl notify={notify} onSettings={() => openSettings()} />
+          )}
           {page === "clients" && (
             <Clients
               clients={clients}
               onNewClient={() => setModal("client")}
               onSelect={setSelectedClient}
-              onSettings={() => navigate("settings")}
+              onSettings={() => openSettings()}
             />
           )}
-          {page === "hosting" && <Hosting sites={sites} notify={notify} />}
+          {page === "hosting" && (
+            <Hosting
+              sites={sites}
+              notify={notify}
+              onSettings={() => openSettings("DirectAdmin")}
+            />
+          )}
           {page === "billing" && (
             <Billing
               invoices={invoices}
@@ -969,7 +1002,9 @@ export default function App() {
               onOpenEditor={setEditorTemplate}
             />
           )}
-          {page === "settings" && <Settings notify={notify} />}
+          {page === "settings" && (
+            <Settings notify={notify} initialTab={settingsTab} />
+          )}
           {page === "setup" && <Setup navigate={navigate} notify={notify} />}
         </main>
         <footer className="app-footer">

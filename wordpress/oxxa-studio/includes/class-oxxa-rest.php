@@ -26,6 +26,15 @@ class Oxxa_Studio_REST
         register_rest_route(self::NS, '/status', array_merge($read, array('callback' => array($this, 'status'))));
         register_rest_route(self::NS, '/settings', array_merge($write, array('callback' => array($this, 'save_settings'))));
         register_rest_route(self::NS, '/connection/test', array_merge($write, array('callback' => array($this, 'test_connection'))));
+        register_rest_route(self::NS, '/ssl', array_merge($read, array('callback' => array($this, 'ssl'))));
+        register_rest_route(self::NS, '/ssl/sync', array_merge($write, array('callback' => array($this, 'ssl_sync'))));
+        register_rest_route(self::NS, '/directadmin', array_merge($read, array('callback' => array($this, 'directadmin'))));
+        register_rest_route(self::NS, '/directadmin/test', array_merge($write, array('callback' => array($this, 'directadmin_test'))));
+        register_rest_route(self::NS, '/directadmin/sync', array_merge($write, array('callback' => array($this, 'directadmin_sync'))));
+        register_rest_route(self::NS, '/directadmin/mailboxes', array(
+            array_merge($read, array('callback' => array($this, 'directadmin_mailboxes'))),
+            array_merge($write, array('callback' => array($this, 'directadmin_create_mailbox'))),
+        ));
         register_rest_route(self::NS, '/domains/sync', array_merge($write, array('callback' => array($this, 'domain_sync'))));
         register_rest_route(self::NS, '/domain/check', array_merge($write, array('callback' => array($this, 'domain_check'))));
         register_rest_route(self::NS, '/domain/register', array_merge($write, array('callback' => array($this, 'domain_register'))));
@@ -313,6 +322,104 @@ class Oxxa_Studio_REST
         return array_values($result);
     }
 
+    public function ssl()
+    {
+        $snapshot = get_network_option(null, 'oxxa_studio_ssl_snapshot', array());
+        $snapshot = is_array($snapshot) ? $snapshot : array();
+        $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        return rest_ensure_response(array_merge(array(
+            'configured' => Oxxa_Studio_Oxxa_API::has_credentials($settings),
+            'connected' => false,
+            'certificates' => array(),
+            'products' => array(),
+            'servers' => array(),
+            'lastSync' => '',
+            'testMode' => !empty($settings['test_mode']),
+        ), $snapshot, array(
+            'configured' => Oxxa_Studio_Oxxa_API::has_credentials($settings),
+            'testMode' => !empty($settings['test_mode']),
+        )));
+    }
+
+    public function ssl_sync()
+    {
+        $ssl = new Oxxa_Studio_SSL();
+        $snapshot = $ssl->sync();
+        if (is_wp_error($snapshot)) {
+            return $snapshot;
+        }
+        update_network_option(null, 'oxxa_studio_ssl_snapshot', $snapshot);
+        return rest_ensure_response($snapshot);
+    }
+
+    public function directadmin()
+    {
+        $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        $snapshot = get_network_option(null, 'oxxa_studio_directadmin_snapshot', array());
+        $snapshot = is_array($snapshot) ? $snapshot : array();
+        return rest_ensure_response(array_merge(array(
+            'configured' => Oxxa_Studio_DirectAdmin_API::has_credentials($settings),
+            'connected' => false,
+            'url' => $settings['directadmin_url'],
+            'username' => $settings['directadmin_username'],
+            'lastSync' => '',
+        ), $snapshot));
+    }
+
+    public function directadmin_test(WP_REST_Request $request)
+    {
+        $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        $plain_password = (string) $request->get_param('password');
+        if ($request->offsetExists('url')) {
+            $url = Oxxa_Studio_DirectAdmin_API::normalize_url($request->get_param('url'));
+            if (is_wp_error($url)) {
+                return $url;
+            }
+            $settings['directadmin_url'] = $url;
+        }
+        if ($request->get_param('username')) {
+            $settings['directadmin_username'] = sanitize_text_field((string) $request->get_param('username'));
+        }
+        if ($plain_password) {
+            $settings['directadmin_password'] = $plain_password;
+        }
+        $api = new Oxxa_Studio_DirectAdmin_API($settings, (bool) $plain_password);
+        $snapshot = $api->account_snapshot();
+        return is_wp_error($snapshot) ? $snapshot : rest_ensure_response($snapshot);
+    }
+
+    public function directadmin_sync()
+    {
+        $api = new Oxxa_Studio_DirectAdmin_API();
+        $snapshot = $api->account_snapshot();
+        if (is_wp_error($snapshot)) {
+            return $snapshot;
+        }
+        update_network_option(null, 'oxxa_studio_directadmin_snapshot', $snapshot);
+        return rest_ensure_response($snapshot);
+    }
+
+    public function directadmin_mailboxes(WP_REST_Request $request)
+    {
+        $api = new Oxxa_Studio_DirectAdmin_API();
+        $result = $api->mailboxes((string) $request->get_param('domain'));
+        return is_wp_error($result) ? $result : rest_ensure_response($result);
+    }
+
+    public function directadmin_create_mailbox(WP_REST_Request $request)
+    {
+        $api = new Oxxa_Studio_DirectAdmin_API();
+        $result = $api->create_mailbox(
+            (string) $request->get_param('domain'),
+            (string) $request->get_param('user'),
+            (string) $request->get_param('password'),
+            (string) $request->get_param('passwordConfirmation'),
+            $request->get_param('quota'),
+            $request->get_param('dailyLimit')
+        );
+        return is_wp_error($result) ? $result : rest_ensure_response($result);
+    }
+
     public function test_connection(WP_REST_Request $request)
     {
         $settings = Oxxa_Studio_Oxxa_API::get_settings();
@@ -337,11 +444,27 @@ class Oxxa_Studio_REST
     public function save_settings(WP_REST_Request $request)
     {
         $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        $previous_oxxa_username = $settings['username'];
         $text_fields = array('username' => 'username', 'registrantIdentity' => 'registrant_identity', 'adminIdentity' => 'admin_identity', 'techIdentity' => 'tech_identity', 'billingIdentity' => 'billing_identity', 'nsgroup' => 'nsgroup');
         foreach ($text_fields as $param => $key) {
             if ($request->offsetExists($param)) {
                 $settings[$key] = sanitize_text_field((string) $request->get_param($param));
             }
+        }
+        $oxxa_account_changed = $previous_oxxa_username !== $settings['username'];
+        $directadmin_changed = false;
+        if ($request->offsetExists('directAdminUrl')) {
+            $url = Oxxa_Studio_DirectAdmin_API::normalize_url($request->get_param('directAdminUrl'));
+            if (is_wp_error($url)) {
+                return $url;
+            }
+            $directadmin_changed = $directadmin_changed || $url !== $settings['directadmin_url'];
+            $settings['directadmin_url'] = $url;
+        }
+        if ($request->offsetExists('directAdminUsername')) {
+            $directadmin_username = sanitize_text_field((string) $request->get_param('directAdminUsername'));
+            $directadmin_changed = $directadmin_changed || $directadmin_username !== $settings['directadmin_username'];
+            $settings['directadmin_username'] = $directadmin_username;
         }
         $boolean_fields = array('testMode' => 'test_mode', 'autoSsl' => 'auto_ssl', 'autoBackups' => 'auto_backups', 'emailUpdates' => 'email_updates', 'domainAlerts' => 'domain_alerts');
         foreach ($boolean_fields as $param => $key) {
@@ -359,13 +482,33 @@ class Oxxa_Studio_REST
                 return $encrypted;
             }
             $settings['password'] = $encrypted;
+            $oxxa_account_changed = true;
+        }
+        $directadmin_password = (string) $request->get_param('directAdminPassword');
+        if ($directadmin_password) {
+            $encrypted = Oxxa_Studio_Oxxa_API::encrypt($directadmin_password);
+            if (is_wp_error($encrypted)) {
+                return $encrypted;
+            }
+            $settings['directadmin_password'] = $encrypted;
+            $directadmin_changed = true;
+        }
+        if (!$settings['directadmin_url'] || !$settings['directadmin_username']) {
+            $directadmin_changed = $directadmin_changed || !empty($settings['directadmin_password']);
+            $settings['directadmin_password'] = '';
+        }
+        if ($directadmin_changed) {
+            delete_network_option(null, 'oxxa_studio_directadmin_snapshot');
+        }
+        if ($oxxa_account_changed) {
+            delete_network_option(null, 'oxxa_studio_ssl_snapshot');
         }
         update_network_option(null, 'oxxa_studio_settings', $settings);
         $network_name = sanitize_text_field((string) $request->get_param('networkName'));
         if ($network_name) {
             update_network_option(null, 'site_name', $network_name);
         }
-        return rest_ensure_response(array('saved' => true, 'testMode' => $settings['test_mode'], 'configured' => Oxxa_Studio_Oxxa_API::has_credentials($settings)));
+        return rest_ensure_response(array('saved' => true, 'testMode' => $settings['test_mode'], 'configured' => Oxxa_Studio_Oxxa_API::has_credentials($settings), 'directAdminConfigured' => Oxxa_Studio_DirectAdmin_API::has_credentials($settings)));
     }
 
     public function create_client(WP_REST_Request $request)

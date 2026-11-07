@@ -9,6 +9,11 @@ export interface WordPressBoot {
   adminUrl?: string;
   demo: boolean;
   testMode?: boolean;
+  directAdmin?: {
+    configured: boolean;
+    url: string;
+    username: string;
+  };
   settings?: {
     username: string;
     registrantIdentity: string;
@@ -38,6 +43,92 @@ export interface SystemStatus {
   phpVersion: string;
   wpVersion: string;
   serverIp: string;
+}
+
+export interface DirectAdminSnapshot {
+  configured: boolean;
+  connected: boolean;
+  url: string;
+  username: string;
+  lastSync: string;
+  apiMode?: "rest" | "legacy";
+  account?: {
+    package: string;
+    domain: string;
+    type: string;
+    suspended: boolean;
+  };
+  usage?: {
+    diskUsedMb: number | null;
+    diskLimitMb: number | null;
+    diskUnlimited: boolean;
+    bandwidthUsedMb: number | null;
+    bandwidthLimitMb: number | null;
+    bandwidthUnlimited: boolean;
+    domainsUsed: number;
+    domainsLimit: number | null;
+    domainsUnlimited: boolean;
+    emailAccounts: number;
+    databases: number;
+    ftpAccounts: number;
+  };
+}
+
+export interface DirectAdminMailbox {
+  username: string;
+  email: string;
+  quotaMb: number | null;
+  usageMb: number | null;
+  sent: number | null;
+  dailyLimit: number | null;
+  suspended: boolean;
+}
+
+export interface DirectAdminMailboxList {
+  domain: string;
+  mailboxes: DirectAdminMailbox[];
+}
+
+export interface SslCertificate {
+  id: string;
+  productId: string;
+  name: string;
+  period: number;
+  domain: string;
+  sans: string;
+  autoRenew: boolean;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+export interface SslProduct {
+  id: string;
+  name: string;
+  validation: string;
+  wildcard: boolean;
+  cnameAuth: boolean;
+  vendor: string;
+  deliveryTime: string;
+  periods: { months: number; price: number }[];
+}
+
+export interface SslServer {
+  id: string;
+  type: "DirectAdmin" | "SatServer";
+  name: string;
+  host: string;
+  createdAt: string;
+}
+
+export interface SslSnapshot {
+  configured: boolean;
+  connected: boolean;
+  certificates: SslCertificate[];
+  products: SslProduct[];
+  servers: SslServer[];
+  lastSync: string;
+  testMode: boolean;
 }
 
 export const wpBoot = window.oxxaStudio;
