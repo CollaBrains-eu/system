@@ -9,7 +9,7 @@ A full-screen **WordPress Multisite network manager and white-label web studio**
 - **WordPress Multisite:** real site provisioning with `wpmu_create_blog()`, live/draft/maintenance states, network paths, and client ownership
 - **Oxxa reseller tools:** XML API availability checks, domain registration with confirmation, portfolio sync, and auto-renew controls
 - **Clients and billing:** persistent client records and invoices, CSV exports, revenue reporting UI
-- **DirectAdmin hosting:** encrypted scoped Login Keys, connection testing, and read-only package, quota, bandwidth, and account-service synchronization
+- **DirectAdmin hosting:** encrypted scoped Login Keys, connection testing, account/quota synchronization, and validated mailbox listing and creation
 - **Web studio:** reusable templates and an interactive visual editor for shared homepage content, colors, type, sizing, and button styles
 - **Companion block theme:** applies published studio designs on network sites; native WordPress Site Editor support for all other content
 - **Security:** `manage_network` checks on every REST route, nonces, encrypted Oxxa passwords and DirectAdmin Login Keys, sanitized inputs, and safe XML parsing
@@ -70,10 +70,13 @@ Open **Network settings → DirectAdmin** and enter the HTTPS base URL (normally
 
 - `CMD_API_SHOW_USER_CONFIG`
 - `CMD_API_SHOW_USER_USAGE`
+- `CMD_API_POP` — only when mailbox listing and creation are required
 
 Test the connection, save, then choose **Hosting → Sync DirectAdmin**. WordPress uses HTTPS Basic Auth and `json=yes`, stores the Login Key with the same AES-256-GCM protection as the Oxxa password, and caches only non-secret account/usage data. The snapshot represents the authenticated **user-level account**, not an inferred reseller-wide total. Clearing the URL or username and saving removes the stored key and cached snapshot.
 
-This milestone is deliberately read-only. It does not create or modify hosting accounts, packages, DNS records, mailboxes, databases, FTP users, or backups. Server load, service health, and per-site resource usage are not inferred from account totals.
+**Hosting → Email accounts** lists real mailbox quota, usage, send counts, daily limits, and suspension state with `CMD_API_POP action=full_list`. Creating a mailbox requires a valid local part, a 12–128 character password with confirmation, a finite quota, and a daily send limit. The create POST contains `action=create`, `passwd`, and `passwd2`; the password is never persisted or returned, and is redacted from provider errors. Every list/create request revalidates that the domain is the authenticated account's primary domain. Demo mailbox creation is local and explicitly labeled.
+
+Account and usage synchronization remain read-only. Mailbox deletion and password resets are not exposed. The integration does not create or modify hosting accounts, packages, DNS records, databases, FTP users, or backups. Server load, service health, and per-site resource usage are not inferred from account totals.
 
 ### Publishing designs
 
@@ -81,7 +84,7 @@ Open **Design studio**, choose a project, and edit the shared template. **Publis
 
 ## Live-data boundaries
 
-The Multisite records, Oxxa availability/registration/auto-renew actions, DirectAdmin user-level account usage, client/invoice records, and published design tokens have PHP adapters. The standalone preview uses sample data. Per-site hosting usage graphs, visits, revenue totals, payment reminders, backups, and payment collection still need adapters for the specific metrics, analytics, backup, and payment providers; they are not silently represented as completed live integrations.
+The Multisite records, Oxxa availability/registration/auto-renew actions, DirectAdmin user-level account usage and mailbox listing/creation, client/invoice records, and published design tokens have PHP adapters. The standalone preview uses sample data. Per-site hosting usage graphs, visits, revenue totals, payment reminders, backups, and payment collection still need adapters for the specific metrics, analytics, backup, and payment providers; they are not silently represented as completed live integrations.
 
 Invoice records use network options. There is no bundled payment gateway or automatic charge to clients. Domain registration is the only paid Oxxa action exposed, and it always requires confirmation.
 

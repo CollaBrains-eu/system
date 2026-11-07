@@ -29,6 +29,10 @@ class Oxxa_Studio_REST
         register_rest_route(self::NS, '/directadmin', array_merge($read, array('callback' => array($this, 'directadmin'))));
         register_rest_route(self::NS, '/directadmin/test', array_merge($write, array('callback' => array($this, 'directadmin_test'))));
         register_rest_route(self::NS, '/directadmin/sync', array_merge($write, array('callback' => array($this, 'directadmin_sync'))));
+        register_rest_route(self::NS, '/directadmin/mailboxes', array(
+            array_merge($read, array('callback' => array($this, 'directadmin_mailboxes'))),
+            array_merge($write, array('callback' => array($this, 'directadmin_create_mailbox'))),
+        ));
         register_rest_route(self::NS, '/domains/sync', array_merge($write, array('callback' => array($this, 'domain_sync'))));
         register_rest_route(self::NS, '/domain/check', array_merge($write, array('callback' => array($this, 'domain_check'))));
         register_rest_route(self::NS, '/domain/register', array_merge($write, array('callback' => array($this, 'domain_register'))));
@@ -361,6 +365,27 @@ class Oxxa_Studio_REST
         }
         update_network_option(null, 'oxxa_studio_directadmin_snapshot', $snapshot);
         return rest_ensure_response($snapshot);
+    }
+
+    public function directadmin_mailboxes(WP_REST_Request $request)
+    {
+        $api = new Oxxa_Studio_DirectAdmin_API();
+        $result = $api->mailboxes((string) $request->get_param('domain'));
+        return is_wp_error($result) ? $result : rest_ensure_response($result);
+    }
+
+    public function directadmin_create_mailbox(WP_REST_Request $request)
+    {
+        $api = new Oxxa_Studio_DirectAdmin_API();
+        $result = $api->create_mailbox(
+            (string) $request->get_param('domain'),
+            (string) $request->get_param('user'),
+            (string) $request->get_param('password'),
+            (string) $request->get_param('passwordConfirmation'),
+            $request->get_param('quota'),
+            $request->get_param('dailyLimit')
+        );
+        return is_wp_error($result) ? $result : rest_ensure_response($result);
     }
 
     public function test_connection(WP_REST_Request $request)

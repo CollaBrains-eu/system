@@ -73,6 +73,21 @@ export interface DirectAdminSnapshot {
   };
 }
 
+export interface DirectAdminMailbox {
+  username: string;
+  email: string;
+  quotaMb: number | null;
+  usageMb: number | null;
+  sent: number | null;
+  dailyLimit: number | null;
+  suspended: boolean;
+}
+
+export interface DirectAdminMailboxList {
+  domain: string;
+  mailboxes: DirectAdminMailbox[];
+}
+
 export const wpBoot = window.oxxaStudio;
 
 export async function wpRequest<T>(

@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { UsageRing } from "../components/Charts";
+import DirectAdminMailboxes from "../components/DirectAdminMailboxes";
 import { Badge, PageHeading } from "../components/UI";
 import type { Site } from "../types";
 import { wpBoot, wpRequest, type DirectAdminSnapshot } from "../lib/wp";
@@ -452,6 +453,11 @@ export default function Hosting({
           </footer>
         </article>
       </section>
+      <DirectAdminMailboxes
+        domain={demo ? "ateliermorrow.com" : account?.domain || ""}
+        demo={demo}
+        notify={notify}
+      />
       <section className="hosting-content-grid">
         <article className="card hosting-sites-card">
           <header className="card-header">

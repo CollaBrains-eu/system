@@ -616,11 +616,11 @@ export default function App() {
               <div className="sidebar-resource">
                 <div>
                   <span>DirectAdmin hosting</span>
-                  <strong>Read-only</strong>
+                  <strong>Account + mail</strong>
                 </div>
                 <small>
-                  Open Hosting to synchronize verified account usage. No sample
-                  live metrics are shown.
+                  Synchronize verified account usage and manage explicit mailbox
+                  creation. No sample live metrics are shown.
                 </small>
                 <button onClick={() => navigate("hosting")}>
                   Open DirectAdmin hosting <ArrowUpRight size={13} />

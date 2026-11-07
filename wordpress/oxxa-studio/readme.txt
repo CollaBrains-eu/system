@@ -4,7 +4,7 @@ Tags: multisite, oxxa, reseller, domains, hosting, web studio
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ Oxxa Studio adds a Network Admin workspace for provisioning client websites, man
 * Network capability checks on every REST endpoint
 * Guided first-run onboarding and real system-health checks
 * Explicit, persistent Oxxa portfolio synchronization
-* Read-only DirectAdmin account and usage integration
+* DirectAdmin account, usage, and validated mailbox integration
 * Client and invoice records stored in network options
 * Shared design tokens and homepage content for network templates
 * Maintenance mode and live/draft site state
@@ -54,9 +54,14 @@ No. Client invoices and revenue records are included, but payment collection req
 When DirectAdmin is configured, package limits, disk usage, bandwidth, and account-service counts come from the authenticated user-level account. Server load, per-site usage, backup status, and service health are not inferred. Standalone preview metrics are labeled demo data.
 
 = Which DirectAdmin permissions are required? =
-Use a restricted Login Key with CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE. Restrict its source IP where possible. The adapter is read-only and does not require your main DirectAdmin password.
+Use a restricted Login Key with CMD_API_SHOW_USER_CONFIG and CMD_API_SHOW_USER_USAGE. Add CMD_API_POP only for mailbox listing and explicit creation. Restrict its source IP where possible. Mailbox passwords are never stored, and your main DirectAdmin password is not required.
 
 == Changelog ==
+
+= 1.4.0 =
+* Added DirectAdmin mailbox listing with quota, usage, send-limit, and suspension data.
+* Added validated mailbox creation on the authenticated primary account domain.
+* Mailbox passwords are POST-only, redacted from errors, and never stored or returned.
 
 = 1.3.0 =
 * Added encrypted DirectAdmin Login Key configuration and connection testing.

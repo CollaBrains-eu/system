@@ -477,9 +477,11 @@ export default function Settings({
                     <strong>Use a restricted Login Key</strong>
                     <p>
                       Create a key under DirectAdmin → Advanced Features → Login
-                      Keys. Allow only CMD_API_SHOW_USER_CONFIG and
-                      CMD_API_SHOW_USER_USAGE, and restrict its IP where
-                      possible. The key is encrypted by WordPress.
+                      Keys. Allow CMD_API_SHOW_USER_CONFIG and
+                      CMD_API_SHOW_USER_USAGE for account sync. Add CMD_API_POP
+                      only when mailbox listing and creation are needed.
+                      Restrict its IP where possible. The key is encrypted by
+                      WordPress.
                     </p>
                   </div>
                 </div>
@@ -545,11 +547,13 @@ export default function Settings({
                 </div>
                 <div className="settings-toggle-row">
                   <div>
-                    <strong>Read-only foundation</strong>
+                    <strong>Account sync & explicit mailbox creation</strong>
                     <p>
-                      Tests and syncs only read account configuration and
-                      user-level usage. No account, DNS, mail, database, FTP,
-                      package or backup command is executed.
+                      Tests and syncs read account configuration and usage.
+                      Mailboxes are listed on Hosting and created only after you
+                      submit the mailbox form. No mailbox deletion, password
+                      reset, DNS, database, FTP, package or backup command is
+                      executed.
                     </p>
                   </div>
                   <a
