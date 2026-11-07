@@ -32,6 +32,7 @@ import {
   Palette,
   PanelLeftClose,
   Plus,
+  Rocket,
   Search,
   Server,
   Settings2,
@@ -85,6 +86,7 @@ import Billing from "./pages/Billing";
 import Studio from "./pages/Studio";
 import Templates from "./pages/Templates";
 import Settings from "./pages/Settings";
+import Setup from "./pages/Setup";
 import DesignEditor from "./pages/DesignEditor";
 
 const navigation: {
@@ -132,6 +134,7 @@ const pageLabels: Record<PageId, string> = {
   studio: "Design studio",
   templates: "Template library",
   settings: "Network settings",
+  setup: "Setup guide",
 };
 
 type ModalType = "site" | "domain" | "client" | "invoice" | null;
@@ -139,7 +142,11 @@ type ModalType = "site" | "domain" | "client" | "invoice" | null;
 export default function App() {
   const initialHash = window.location.hash.replace("#", "") as PageId;
   const [page, setPage] = useState<PageId>(
-    Object.keys(pageLabels).includes(initialHash) ? initialHash : "overview",
+    Object.keys(pageLabels).includes(initialHash)
+      ? initialHash
+      : wpBoot?.demo
+        ? "setup"
+        : "overview",
   );
   const [sites, setSites] = useState(initialSites);
   const [domains, setDomains] = useState(initialDomains);
@@ -562,7 +569,16 @@ export default function App() {
             </div>
           )}
           <button
-            className={`nav-item settings-nav-item ${page === "settings" ? "active" : ""}`}
+            className={`nav-item settings-nav-item ${page === "setup" ? "active" : ""}`}
+            onClick={() => navigate("setup")}
+            title="Setup guide"
+          >
+            <Rocket size={18} />
+            {!sidebarCompact && <span>Setup guide</span>}
+            {wpBoot?.demo && <small>1</small>}
+          </button>
+          <button
+            className={`nav-item ${page === "settings" ? "active" : ""}`}
             onClick={() => navigate("settings")}
             title="Network settings"
           >
@@ -898,13 +914,22 @@ export default function App() {
             />
           )}
           {page === "settings" && <Settings notify={notify} />}
+          {page === "setup" && <Setup navigate={navigate} notify={notify} />}
         </main>
         <footer className="app-footer">
           <span>
             <Logo compact /> Oxxa Studio for WordPress Multisite
           </span>
           <span>
-            <ConnectedDot /> Oxxa connected <i /> Last sync 1 min ago
+            {wpBoot?.demo ? (
+              <>
+                <Cloud size={13} /> Oxxa setup required
+              </>
+            ) : (
+              <>
+                <ConnectedDot /> Oxxa connected <i /> Last sync 1 min ago
+              </>
+            )}
           </span>
         </footer>
       </div>

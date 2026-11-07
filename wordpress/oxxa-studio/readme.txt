@@ -4,7 +4,7 @@ Tags: multisite, oxxa, reseller, domains, hosting, web studio
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,7 @@ Oxxa Studio adds a Network Admin workspace for provisioning client websites, man
 * AES-256-GCM encrypted server-side API credentials
 * Oxxa test mode and explicit registration confirmation
 * Network capability checks on every REST endpoint
+* Guided first-run onboarding and real system-health checks
 * Client and invoice records stored in network options
 * Shared design tokens and homepage content for network templates
 * Maintenance mode and live/draft site state
@@ -51,6 +52,10 @@ No. Client invoices and revenue records are included, but payment collection req
 The bundled hosting graphs are presentation defaults. Real resource graphs require metrics from your specific Oxxa hosting package/control panel. Domain and Multisite records are live when configured.
 
 == Changelog ==
+
+= 1.1.0 =
+* Added guided setup wizard with WordPress/PHP requirement checks.
+* Added Oxxa connection, registration-default, theme, and safe domain-lookup verification.
 
 = 1.0.0 =
 * Initial Multisite web-studio and Oxxa reseller integration.

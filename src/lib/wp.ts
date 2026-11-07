@@ -23,6 +23,23 @@ declare global {
   }
 }
 
+export interface SystemStatus {
+  multisite: boolean;
+  canProvision: boolean;
+  openssl: boolean;
+  simplexml: boolean;
+  https: boolean;
+  themeInstalled: boolean;
+  themeEnabled: boolean;
+  credentials: boolean;
+  registrationReady: boolean;
+  testMode: boolean;
+  siteCount: number;
+  phpVersion: string;
+  wpVersion: string;
+  serverIp: string;
+}
+
 export const wpBoot = window.oxxaStudio;
 
 export async function wpRequest<T>(

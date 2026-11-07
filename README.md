@@ -4,6 +4,7 @@ A full-screen **WordPress Multisite network manager and white-label web studio**
 
 ## Included
 
+- **Guided onboarding:** real WordPress/PHP requirement checks, Oxxa authentication, registration defaults, theme readiness, and a safe API lookup
 - **Network dashboard:** site health, revenue, recent websites, and studio activity
 - **WordPress Multisite:** real site provisioning with `wpmu_create_blog()`, live/draft/maintenance states, network paths, and client ownership
 - **Oxxa reseller tools:** XML API availability checks, domain registration with confirmation, portfolio sync, and auto-renew controls
@@ -45,7 +46,7 @@ Then:
 
 1. In **Network Admin → Plugins → Add New → Upload Plugin**, install `oxxa-studio.zip` and **Network Activate** it.
 2. In **Network Admin → Themes → Add New**, install `oxxa-studio-theme.zip` and **Network Enable** it.
-3. Open **Network Admin → Oxxa Studio → Network settings**.
+3. Open **Network Admin → Oxxa Studio**. If Oxxa is not configured, the **Setup guide** opens automatically and walks through system health, authentication, registration defaults, theme readiness, and a read-only test lookup.
 4. Add the **separate Oxxa API username/password** from **My Account → API** in `my.oxxa.com`.
 5. Add the WordPress server's verified public outbound IP to the **Oxxa API IP whitelist**. Optionally set `define('OXXA_STUDIO_PUBLIC_IP', '203.0.113.42');` in `wp-config.php` (replace the documentation example with your real IP) so it appears in Network settings.
 6. Set the default **registrant identity** and **nameserver group**. Registration uses the registrant for admin/tech/billing unless separate handles are supplied through the settings adapter.

@@ -3,7 +3,7 @@
  * Plugin Name: Oxxa Studio — Multisite Reseller Manager
  * Plugin URI:  https://github.com/CollaBrains-eu/system
  * Description: A white-label web studio and Oxxa reseller manager for WordPress Multisite networks.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author:      CollaBrains
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('OXXA_STUDIO_VERSION', '1.0.0');
+define('OXXA_STUDIO_VERSION', '1.1.0');
 define('OXXA_STUDIO_FILE', __FILE__);
 define('OXXA_STUDIO_DIR', plugin_dir_path(__FILE__));
 define('OXXA_STUDIO_URL', plugin_dir_url(__FILE__));

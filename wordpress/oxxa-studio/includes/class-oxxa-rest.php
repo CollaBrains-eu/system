@@ -23,6 +23,7 @@ class Oxxa_Studio_REST
         $write = array('methods' => WP_REST_Server::CREATABLE, 'permission_callback' => array($this, 'permission'));
 
         register_rest_route(self::NS, '/network', array_merge($read, array('callback' => array($this, 'network'))));
+        register_rest_route(self::NS, '/status', array_merge($read, array('callback' => array($this, 'status'))));
         register_rest_route(self::NS, '/settings', array_merge($write, array('callback' => array($this, 'save_settings'))));
         register_rest_route(self::NS, '/connection/test', array_merge($write, array('callback' => array($this, 'test_connection'))));
         register_rest_route(self::NS, '/domain/check', array_merge($write, array('callback' => array($this, 'domain_check'))));
@@ -33,6 +34,29 @@ class Oxxa_Studio_REST
         register_rest_route(self::NS, '/clients', array_merge($write, array('callback' => array($this, 'create_client'))));
         register_rest_route(self::NS, '/invoices', array_merge($write, array('callback' => array($this, 'create_invoice'))));
         register_rest_route(self::NS, '/designs', array_merge($write, array('callback' => array($this, 'save_design'))));
+    }
+
+    public function status()
+    {
+        global $wp_version;
+        $settings = Oxxa_Studio_Oxxa_API::get_settings();
+        $theme = wp_get_theme('oxxa-studio-theme');
+        return rest_ensure_response(array(
+            'multisite' => is_multisite(),
+            'canProvision' => current_user_can('manage_network'),
+            'openssl' => function_exists('openssl_encrypt') && function_exists('openssl_decrypt'),
+            'simplexml' => function_exists('simplexml_load_string'),
+            'https' => is_ssl() && strpos(home_url(), 'https://') === 0,
+            'themeInstalled' => $theme->exists(),
+            'themeEnabled' => $theme->exists() && $theme->is_allowed('network'),
+            'credentials' => Oxxa_Studio_Oxxa_API::has_credentials($settings),
+            'registrationReady' => !empty($settings['registrant_identity']) && !empty($settings['nsgroup']),
+            'testMode' => !empty($settings['test_mode']),
+            'siteCount' => (int) get_blog_count(),
+            'phpVersion' => PHP_VERSION,
+            'wpVersion' => $wp_version,
+            'serverIp' => defined('OXXA_STUDIO_PUBLIC_IP') ? OXXA_STUDIO_PUBLIC_IP : '',
+        ));
     }
 
     public function network()

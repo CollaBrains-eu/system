@@ -7,7 +7,8 @@ export type PageId =
   | "billing"
   | "studio"
   | "templates"
-  | "settings";
+  | "settings"
+  | "setup";
 
 export type SiteStatus = "Live" | "Draft" | "Maintenance";
 
